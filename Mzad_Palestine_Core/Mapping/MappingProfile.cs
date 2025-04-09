@@ -66,7 +66,7 @@ namespace Mzad_Palestine_Core.Mapping
 
             // Review mapping
             CreateMap<Review , ReviewDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.ReviewId));
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.ReviewedUserId));
             CreateMap<CreateReviewDto , Review>();
 
             // Report mapping
@@ -105,7 +105,7 @@ namespace Mzad_Palestine_Core.Mapping
 
             // Support Ticket mapping
             CreateMap<CustomerSupportTicket , SupportTicketDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.TicketId));
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.TicketId));  // Changed from TicketId to Id
             CreateMap<CreateSupportTicketDto , CustomerSupportTicket>();
         }
     }

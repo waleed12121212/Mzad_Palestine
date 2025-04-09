@@ -8,15 +8,24 @@ using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Identity;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
 using Mzad_Palestine_Infrastructure.Repositories;
-using Mzad_Palestine_API.Middleware;
+using Microsoft.EntityFrameworkCore;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using FluentValidation.AspNetCore;
+using Mzad_Palestine_API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. تكوين DbContexts (قاعدة البيانات)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register services
+builder.Services.AddScoped<ISupportService , SupportService>();
+// Register other services...
 
 builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
@@ -64,6 +73,7 @@ builder.Services.AddScoped<ITagRepository , TagRepository>();
 builder.Services.AddScoped<IWatchlistRepository , WatchlistRepository>();
 builder.Services.AddScoped<ISubscriptionRepository , SubscriptionRepository>();
 builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTicketRepository>();
+builder.Services.AddScoped<ISupportRepository, SupportRepository>();
 
 // 5. تسجيل UnitOfWork
 builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();
@@ -89,12 +99,11 @@ builder.Services.AddScoped<ISupportService , SupportService>();
 builder.Services.AddAutoMapper(typeof(Program));
 
 // 8. تسجيل MediatR (لنمط CQRS)
-builder.Services.AddMediatR(typeof(Program));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 // 9. تسجيل FluentValidation (في حال كنت تستخدمها)
 builder.Services.AddControllers()
-                .AddFluentValidation(config =>
-                    config.RegisterValidatorsFromAssemblyContaining<Program>());
+                .AddFluentValidation(config => config.RegisterValidatorsFromAssembly(typeof(Program).Assembly));
 
 // 10. إضافة Controllers و Swagger
 builder.Services.AddEndpointsApiExplorer();

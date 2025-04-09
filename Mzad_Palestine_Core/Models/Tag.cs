@@ -10,6 +10,7 @@ namespace Mzad_Palestine_Core.Models
     {
         public int TagId { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
 
         // الملاحة
         public ICollection<ListingTag> ListingTags { get; set; }

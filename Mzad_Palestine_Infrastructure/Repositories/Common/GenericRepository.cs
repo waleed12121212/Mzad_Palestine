@@ -1,4 +1,5 @@
-﻿using Mzad_Palestine_Core.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Infrastructure.Data;
 using System;
 using System.Collections.Generic;

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mzad_Palestine_Core.Enums;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
@@ -17,9 +18,30 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<DisputeDto> CreateAsync(CreateDisputeDto dto)
         {
-            var entity = new Dispute { RelatedAuctionId = dto.RelatedAuctionId , Message = dto.Message , Status = "Open" };
-            var created = await _repository.AddAsync(entity);
-            return new DisputeDto(created.Id , created.RelatedAuctionId , created.Message , created.Status);
+            var entity = new Dispute
+            {
+                UserId = dto.UserId,
+                AuctionId = dto.AuctionId,
+                Reason = dto.Reason,
+                Status = DisputeStatus.Open,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _repository.AddAsync(entity);
+            return new DisputeDto
+            {
+                Id = entity.DisputeId,
+                UserId = entity.UserId,
+                AuctionId = entity.AuctionId,
+                Reason = entity.Reason,
+                Status = entity.Status,
+                CreatedAt = entity.CreatedAt,
+                ResolvedBy = entity.ResolvedBy
+            };
+        }
+
+        public Task<IEnumerable<DisputeDto>> GetAllAsync( )
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Mzad_Palestine_Core.Interfaces.Services
     public interface IAutoBidService
     {
         Task<AutoBidDto> CreateAsync(CreateAutoBidDto dto);
+        Task<AutoBidDto> GetByIdAsync(int id);
     }
 
 }

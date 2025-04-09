@@ -1,4 +1,5 @@
-﻿using Mzad_Palestine_Core.DTO_s.Bid;
+﻿using FluentValidation;
+using Mzad_Palestine_Core.DTO_s.Bid;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,5 @@
-﻿using Mzad_Palestine_Core.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
@@ -17,7 +18,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<IEnumerable<Review>> GetReviewsForUserAsync(int userId)
         {
             return await _context.Reviews
-                .Where(r => r.RevieweeId == userId)
+                .Where(r => r.ReviewedUserId == userId)
                 .ToListAsync();
         }
     }

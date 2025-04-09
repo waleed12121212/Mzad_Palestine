@@ -18,8 +18,28 @@ namespace Mzad_Palestine_Infrastructure.Services
         public async Task<MessageDto> CreateAsync(CreateMessageDto dto)
         {
             var entity = new Message { ReceiverId = dto.ReceiverId , Subject = dto.Subject , Content = dto.Content , Timestamp = DateTime.UtcNow };
-            var created = await _repository.AddAsync(entity);
-            return new MessageDto(created.Id , created.SenderId , created.ReceiverId , created.Subject , created.Content , created.Timestamp , created.IsRead);
+            await _repository.AddAsync(entity);
+
+            return new MessageDto
+            {
+                Id = entity.MessageId,
+                SenderId = entity.SenderId,
+                ReceiverId = entity.ReceiverId,
+                Subject = entity.Subject,
+                Content = entity.Content,
+                Timestamp = entity.Timestamp,
+                IsRead = entity.IsRead
+            };
+        }
+
+        public Task<IEnumerable<MessageDto>> GetInboxAsync(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<MessageDto> SendAsync(CreateMessageDto dto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

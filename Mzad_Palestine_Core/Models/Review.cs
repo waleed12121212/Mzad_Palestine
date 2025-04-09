@@ -10,17 +10,17 @@ namespace Mzad_Palestine_Core.Models
 {
     public class Review
     {
-        public int ReviewId { get; set; }
+        public int Id { get; set; }  // Changed from ReviewId
         public int ReviewerId { get; set; }
-        public int RevieweeId { get; set; }
+        public int ReviewedUserId { get; set; }  // Changed from RevieweeId
         public int ListingId { get; set; }
-        public int Rating { get; set; } // بين 1 و 5
+        public int Rating { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        // الملاحة
+        // Navigation properties
         public User Reviewer { get; set; }
-        public User Reviewee { get; set; }
+        public User ReviewedUser { get; set; }  // Changed from Reviewee
         public Listing Listing { get; set; }
     }
 }

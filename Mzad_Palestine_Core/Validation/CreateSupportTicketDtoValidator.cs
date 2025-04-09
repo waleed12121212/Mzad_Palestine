@@ -1,4 +1,5 @@
-﻿using Mzad_Palestine_Core.DTO_s.Customer_Support;
+﻿using FluentValidation;
+using Mzad_Palestine_Core.DTO_s.Customer_Support;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,8 @@ namespace Mzad_Palestine_Core.Validation
             RuleFor(x => x.Subject)
                 .NotEmpty().WithMessage("Subject is required.");
 
-            RuleFor(x => x.Message)
-                .NotEmpty().WithMessage("Message is required.");
+            RuleFor(x => x.Description)
+                .NotEmpty().WithMessage("Description is required.");
         }
     }
 }

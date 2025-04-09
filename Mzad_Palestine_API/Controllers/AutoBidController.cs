@@ -18,5 +18,14 @@ namespace Mzad_Palestine_API.Controllers
             var autoBid = await _autoBidService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById) , new { id = autoBid.Id } , autoBid);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var autoBid = await _autoBidService.GetByIdAsync(id);
+            if (autoBid == null)
+                return NotFound();
+            return Ok(autoBid);
+        }
     }
 }

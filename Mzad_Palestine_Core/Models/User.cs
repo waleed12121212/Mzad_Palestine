@@ -21,7 +21,7 @@ namespace Mzad_Palestine_Core.Models
         public int ReputationScore { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        // خصائص الملاحة (Navigation Properties)
+        // Navigation Properties
         public ICollection<Listing> Listings { get; set; }
         public ICollection<Bid> Bids { get; set; }
         public ICollection<Payment> Payments { get; set; }
@@ -36,5 +36,7 @@ namespace Mzad_Palestine_Core.Models
         public ICollection<Dispute> Disputes { get; set; }
         public ICollection<Subscription> Subscriptions { get; set; }
         public ICollection<CustomerSupportTicket> CustomerSupportTickets { get; set; }
+        public ICollection<Watchlist> Watchlists { get; set; }
+        public ICollection<Invoice> Invoices { get; set; }
     }
 }

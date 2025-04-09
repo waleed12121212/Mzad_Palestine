@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mzad_Palestine_Core.Enums;
 
 namespace Mzad_Palestine_Core.Models
 {
-    internal class CustomerSupportTicket
+    public class CustomerSupportTicket
     {
+        public int TicketId { get; set; }
+        public int UserId { get; set; }
+        public string Subject { get; set; }
+        public string Description { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public TicketStatus Status { get; set; }
+
+        // Navigation Property
+        public virtual User User { get; set; }
     }
 }

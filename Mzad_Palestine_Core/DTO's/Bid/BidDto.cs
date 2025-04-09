@@ -16,5 +16,17 @@ namespace Mzad_Palestine_Core.DTO_s.Bid
         public bool IsAutoBid { get; set; }
         public bool IsWinner { get; set; }
         public string Status { get; set; }
+
+        public BidDto(int id, int auctionId, int userId, decimal bidAmount, DateTime bidTime, bool isAutoBid, bool isWinner, string status)
+        {
+            Id = id;
+            AuctionId = auctionId;
+            UserId = userId;
+            BidAmount = bidAmount;
+            BidTime = bidTime;
+            IsAutoBid = isAutoBid;
+            IsWinner = isWinner;
+            Status = status;
+        }
     }
 }

@@ -35,6 +35,7 @@ namespace Mzad_Palestine_Infrastructure.Data
         public DbSet<Watchlist> Watchlists { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<CustomerSupportTicket> CustomerSupportTickets { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         // Override لـ OnModelCreating لتكوين العلاقات والقيود باستخدام Fluent API
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -194,19 +195,19 @@ namespace Mzad_Palestine_Infrastructure.Data
             #region تكوين Review
             modelBuilder.Entity<Review>(entity =>
             {
-                entity.HasKey(r => r.ReviewId);
+                entity.HasKey(r => r.Id);
                 entity.Property(r => r.Rating)
                       .IsRequired();
                 entity.Property(r => r.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
-                // العلاقة مع Reviewer, Reviewee و Listing
+                // العلاقة مع Reviewer, ReviewedUser و Listing
                 entity.HasOne(r => r.Reviewer)
                       .WithMany(u => u.ReviewsGiven)
                       .HasForeignKey(r => r.ReviewerId)
                       .OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(r => r.Reviewee)
+                entity.HasOne(r => r.ReviewedUser)
                       .WithMany(u => u.ReviewsReceived)
-                      .HasForeignKey(r => r.RevieweeId)
+                      .HasForeignKey(r => r.ReviewedUserId)
                       .OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(r => r.Listing)
                       .WithMany(l => l.Reviews)

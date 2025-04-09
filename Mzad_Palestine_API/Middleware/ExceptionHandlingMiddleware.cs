@@ -38,11 +38,13 @@ namespace Mzad_Palestine_API.Middleware
 
             var errorResponse = new
             {
-                StatusCode = context.Response.StatusCode ,
-                Message = "Internal Server Error. Please try again later." ,
-                // في البيئات الإنتاجية يُفضّل إخفاء التفاصيل الدقيقة لتجنب كشف معلومات حساسة\n                Detailed = exception.Message //يمكن الاستغناء عنها في البيئات الإنتاجية\n            };
+                StatusCode = context.Response.StatusCode,
+                Message = "Internal Server Error. Please try again later.",
+                // في البيئات الإنتاجية يُفضّل إخفاء التفاصيل الدقيقة لتجنب كشف معلومات حساسة
+                Detailed = exception.Message //يمكن الاستغناء عنها في البيئات الإنتاجية
+            };
 
-                var jsonResponse = JsonSerializer.Serialize(errorResponse);
+            var jsonResponse = JsonSerializer.Serialize(errorResponse);
             return context.Response.WriteAsync(jsonResponse);
         }
     }

@@ -2,6 +2,7 @@
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Models;
+using Mzad_Palestine_Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +18,40 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<PaymentDto> CreateAsync(CreatePaymentDto dto)
         {
-            var entity = new Payment { UserId = dto.UserId , Amount = dto.Amount , Method = dto.Method , Status = "Pending" };
-            var created = await _repository.AddAsync(entity);
-            return new PaymentDto(created.Id , created.UserId , created.Amount , created.Method , created.Status , created.Timestamp);
+            var entity = new Payment
+            {
+                AuctionId = dto.AuctionId,
+                Amount = dto.Amount,
+                Method = Enum.Parse<PaymentMethod>(dto.Method),
+                Status = PaymentStatus.Pending,
+                TransactionDate = DateTime.UtcNow
+            };
+            
+            await _repository.AddAsync(entity);
+            
+            return new PaymentDto
+            {
+                Id = entity.PaymentId,
+                AuctionId = entity.AuctionId,
+                Amount = entity.Amount,
+                Method = entity.Method.ToString(),
+                Status = entity.Status.ToString(),
+                TransactionDate = entity.TransactionDate
+            };
+        }
+
+        public async Task<IEnumerable<PaymentDto>> GetByUserIdAsync(int userId)
+        {
+            var payments = await _repository.GetPaymentsByUserAsync(userId);
+            return payments.Select(p => new PaymentDto
+            {
+                Id = p.PaymentId,
+                AuctionId = p.AuctionId,
+                Amount = p.Amount,
+                Method = p.Method.ToString(),
+                Status = p.Status.ToString(),
+                TransactionDate = p.TransactionDate
+            });
         }
     }
 }

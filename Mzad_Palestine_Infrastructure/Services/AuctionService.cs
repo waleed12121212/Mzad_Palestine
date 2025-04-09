@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mzad_Palestine_Core.Enums;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
@@ -17,9 +18,39 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<AuctionDto> CreateAsync(CreateAuctionDto dto)
         {
-            var entity = new Auction { ListingId = dto.ListingId , StartTime = dto.StartTime , EndTime = dto.EndTime , ReservePrice = dto.ReservePrice , BidIncrement = dto.BidIncrement , ImageUrl = dto.ImageUrl , Status = "Pending" };
-            var created = await _repository.AddAsync(entity);
-            return new AuctionDto(created.Id , created.ListingId , created.StartTime , created.EndTime , created.ReservePrice , created.CurrentBid , created.BidIncrement , created.WinnerId , created.Status);
+            var entity = new Auction
+            {
+                ListingId = dto.ListingId,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                ReservePrice = dto.ReservePrice,
+                BidIncrement = dto.BidIncrement,
+                ImageUrl = dto.ImageUrl,
+                Status = AuctionStatus.Open
+            };
+            await _repository.AddAsync(entity);
+            return new AuctionDto
+            {
+                Id = entity.AuctionId,
+                ListingId = entity.ListingId,
+                StartTime = entity.StartTime,
+                EndTime = entity.EndTime,
+                ReservePrice = entity.ReservePrice,
+                CurrentBid = entity.CurrentBid,
+                BidIncrement = entity.BidIncrement,
+                WinnerId = entity.WinnerId,
+                Status = entity.Status
+            };
+        }
+
+        public Task<IEnumerable<AuctionDto>> GetActiveAsync( )
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AuctionDto?> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

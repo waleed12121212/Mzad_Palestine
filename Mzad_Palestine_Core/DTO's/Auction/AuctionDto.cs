@@ -1,9 +1,5 @@
-﻿using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mzad_Palestine_Core.DTO_s.Auction
 {
@@ -17,6 +13,7 @@ namespace Mzad_Palestine_Core.DTO_s.Auction
         public decimal CurrentBid { get; set; }
         public decimal BidIncrement { get; set; }
         public int? WinnerId { get; set; }
-        public string Status { get; set; }
+        public AuctionStatus Status { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

@@ -9,8 +9,8 @@ namespace Mzad_Palestine_Core.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<UserDto> RegisterAsync(RegisterUserDto dto);
-        Task<UserDto> LoginAsync(LoginUserDto dto);
+        Task<UserDto> RegisterUserAsync(RegisterUserDto dto);
+        Task<UserDto> LoginUserAsync(LoginUserDto dto);
         Task<IEnumerable<UserDto>> GetAllUsersAsync( );
         Task<UserDto?> GetUserByIdAsync(int id);
     }

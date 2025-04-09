@@ -22,10 +22,22 @@ namespace Mzad_Palestine_Core.Models
         public DateTime UpdatedAt { get; set; }
 
         // الملاحة
-        public User User { get; set; }
-        public Auction Auction { get; set; }
-        public ICollection<ListingTag> ListingTags { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
-        public ICollection<Review> Reviews { get; set; }
+        // Navigation Properties
+        public virtual User User { get; set; }
+        public virtual ICollection<Watchlist> Watchlists { get; set; }
+        public virtual ICollection<Report> Reports { get; set; }
+        public virtual Auction Auction { get; set; }
+        public virtual ICollection<Review> Reviews { get; set; }
+        public virtual ICollection<ListingTag> ListingTags { get; set; }
+        public virtual ICollection<Invoice> Invoices { get; set; }
+
+        public Listing()
+        {
+            Watchlists = new HashSet<Watchlist>();
+            Reports = new HashSet<Report>();
+            Reviews = new HashSet<Review>();
+            ListingTags = new HashSet<ListingTag>();
+            Invoices = new HashSet<Invoice>();
+        }
     }
 }

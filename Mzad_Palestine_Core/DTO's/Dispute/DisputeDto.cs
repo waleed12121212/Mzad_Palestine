@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mzad_Palestine_Core.Enums;
+using System;
 
 namespace Mzad_Palestine_Core.DTO_s.Dispute
 {
@@ -12,8 +9,8 @@ namespace Mzad_Palestine_Core.DTO_s.Dispute
         public int UserId { get; set; }
         public int AuctionId { get; set; }
         public string Reason { get; set; }
-        public string Status { get; set; }
+        public DisputeStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
         public int? ResolvedBy { get; set; }
     }
-
 }

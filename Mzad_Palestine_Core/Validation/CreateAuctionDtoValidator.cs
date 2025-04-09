@@ -1,30 +1,31 @@
-﻿using Mzad_Palestine_Core.DTO_s.Auction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
+using Mzad_Palestine_Core.DTO_s.Auction;
 
 namespace Mzad_Palestine_Core.Validation
 {
     public class CreateAuctionDtoValidator : AbstractValidator<CreateAuctionDto>
     {
-        public CreateAuctionDtoValidator( )
+        public CreateAuctionDtoValidator()
         {
             RuleFor(x => x.ListingId)
-                .GreaterThan(0).WithMessage("Listing Id is required.");
+                .NotEmpty().WithMessage("Listing ID is required");
 
             RuleFor(x => x.StartTime)
-                .LessThan(x => x.EndTime).WithMessage("Start time must be less than End time.");
+                .NotEmpty().WithMessage("Start time is required")
+                .GreaterThan(DateTime.Now).WithMessage("Start time must be in the future");
+
+            RuleFor(x => x.EndTime)
+                .NotEmpty().WithMessage("End time is required")
+                .GreaterThan(x => x.StartTime).WithMessage("End time must be after start time");
 
             RuleFor(x => x.ReservePrice)
-                .GreaterThanOrEqualTo(0).WithMessage("Reserve Price must be zero or greater.");
+                .GreaterThan(0).WithMessage("Reserve price must be greater than 0");
 
             RuleFor(x => x.BidIncrement)
-                .GreaterThan(0).WithMessage("Bid Increment must be greater than zero.");
+                .GreaterThan(0).WithMessage("Bid increment must be greater than 0");
 
             RuleFor(x => x.ImageUrl)
-                .NotEmpty().WithMessage("Image Url is required.");
+                .NotEmpty().WithMessage("Image URL is required");
         }
     }
 }
