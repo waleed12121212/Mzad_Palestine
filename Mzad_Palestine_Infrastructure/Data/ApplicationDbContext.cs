@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Mzad_Palestine_Core.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Mzad_Palestine_Infrastructure.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User , IdentityRole<int> , int>
     {
         // Constructor مع خيارات DbContext
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -45,8 +47,8 @@ namespace Mzad_Palestine_Infrastructure.Data
             #region تكوين الكيان User
             modelBuilder.Entity<User>(entity =>
             {
-                entity.HasKey(u => u.UserId);
-                entity.Property(u => u.Username)
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.UserName)
                       .IsRequired()
                       .HasMaxLength(100);
                 entity.Property(u => u.Email)
@@ -79,7 +81,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(l => l.User)
                       .WithMany(u => u.Listings)
                       .HasForeignKey(l => l.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 
@@ -97,8 +99,9 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(a => a.Listing)
                       .WithOne(l => l.Auction)
                       .HasForeignKey<Auction>(a => a.ListingId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                // العلاقة مع User (Winner)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                // العلاقة مع Winner (User)
                 entity.HasOne(a => a.Winner)
                       .WithMany()
                       .HasForeignKey(a => a.WinnerId)
@@ -118,7 +121,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(b => b.Auction)
                       .WithMany(a => a.Bids)
                       .HasForeignKey(b => b.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
                 // العلاقة مع User
                 entity.HasOne(b => b.User)
                       .WithMany(u => u.Bids)
@@ -147,7 +150,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(p => p.Auction)
                       .WithMany(a => a.Payments)
                       .HasForeignKey(p => p.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 
@@ -163,12 +166,12 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(i => i.User)
                       .WithMany(u => u.Invoices)
                       .HasForeignKey(i => i.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
                 // العلاقة مع Listing
                 entity.HasOne(i => i.Listing)
                       .WithMany(l => l.Invoices)
                       .HasForeignKey(i => i.ListingId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 
@@ -192,6 +195,21 @@ namespace Mzad_Palestine_Infrastructure.Data
             });
             #endregion
 
+            #region تكوين Transaction
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.HasKey(t => t.TransactionId);
+                entity.Property(t => t.Amount)
+                      .HasColumnType("decimal(18,2)");
+                entity.Property(t => t.TransactionDate)
+                      .HasDefaultValueSql("GETDATE()");
+                entity.HasOne(t => t.User)
+                      .WithMany()
+                      .HasForeignKey(t => t.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
             #region تكوين Review
             modelBuilder.Entity<Review>(entity =>
             {
@@ -212,7 +230,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(r => r.Listing)
                       .WithMany(l => l.Reviews)
                       .HasForeignKey(r => r.ListingId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 
@@ -269,7 +287,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(ab => ab.Auction)
                       .WithMany(a => a.AutoBids)
                       .HasForeignKey(ab => ab.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 
@@ -287,7 +305,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(d => d.Auction)
                       .WithMany(a => a.Disputes)
                       .HasForeignKey(d => d.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(d => d.Resolver)
                       .WithMany()
                       .HasForeignKey(d => d.ResolvedBy)
@@ -334,7 +352,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasOne(w => w.Listing)
                       .WithMany(l => l.Watchlists)
                       .HasForeignKey(w => w.ListingId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 

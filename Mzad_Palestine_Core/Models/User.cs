@@ -6,15 +6,12 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Mzad_Palestine_Core.Models
 {
-    public class User
+    public class User : IdentityUser<int>
     {
-        public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
         public string Phone { get; set; }
         public UserRole Role { get; set; }
         public bool IsVerified { get; set; }

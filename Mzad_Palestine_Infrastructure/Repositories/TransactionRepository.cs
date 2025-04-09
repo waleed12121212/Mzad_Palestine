@@ -20,7 +20,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<IEnumerable<Transaction>> GetUserTransactionsAsync(int userId)
         {
             return await _context.Transactions
-                .Where(t => t.UserId == userId.ToString())
+                .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.TransactionDate)
                 .ToListAsync();
         }

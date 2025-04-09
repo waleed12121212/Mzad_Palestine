@@ -31,9 +31,9 @@ namespace Mzad_Palestine_Core.Mapping
         {
             // User mapping
             CreateMap<User , UserDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.UserId));
-            CreateMap<RegisterUserDto , User>()
-                .ForMember(dest => dest.UserId , opt => opt.Ignore()); // يتم تعيينها عند الإضافة
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.Id));
+            CreateMap<RegisterUserDto , User>();
+            // No need to ignore Id as it will be set by Identity framework
 
             // Listing mapping
             CreateMap<Listing , ListingDto>()

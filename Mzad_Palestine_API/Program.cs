@@ -5,7 +5,6 @@ using Mzad_Palestine_Core.Interfaces.Common;
 using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
-using Mzad_Palestine_Infrastructure.Identity;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
 using Mzad_Palestine_Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,21 +18,24 @@ using Mzad_Palestine_API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. تكوين DbContexts (قاعدة البيانات)
+// Configure DbContext and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configure Identity
+builder.Services.AddIdentity<User, IdentityRole<int>>(options => {
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 // Register services
 builder.Services.AddScoped<ISupportService , SupportService>();
 // Register other services...
-
-builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
-
-// 2. إعداد ASP.NET Core Identity
-builder.Services.AddIdentity<ApplicationUser , IdentityRole<int>>()
-    .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
-    .AddDefaultTokenProviders();
 
 // 3. إعداد JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -73,7 +75,7 @@ builder.Services.AddScoped<ITagRepository , TagRepository>();
 builder.Services.AddScoped<IWatchlistRepository , WatchlistRepository>();
 builder.Services.AddScoped<ISubscriptionRepository , SubscriptionRepository>();
 builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTicketRepository>();
-builder.Services.AddScoped<ISupportRepository, SupportRepository>();
+builder.Services.AddScoped<ISupportRepository , SupportRepository>();
 
 // 5. تسجيل UnitOfWork
 builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();

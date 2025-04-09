@@ -22,7 +22,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
         public async Task<User> GetByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
 
         public async Task<IEnumerable<User>> GetUsersByRoleAsync(string role)

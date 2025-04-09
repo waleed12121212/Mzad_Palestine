@@ -9,10 +9,10 @@ namespace Mzad_Palestine_Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public UserService(UserManager<ApplicationUser> userManager , SignInManager<ApplicationUser> signInManager)
+        public UserService(UserManager<User> userManager , SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -20,7 +20,7 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<UserDto> RegisterUserAsync(RegisterUserDto registerDto)
         {
-            var user = new ApplicationUser
+            var user = new User
             {
                 UserName = registerDto.Username ,
                 Email = registerDto.Email ,
