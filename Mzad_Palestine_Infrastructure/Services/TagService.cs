@@ -50,7 +50,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             var tag = await GetTagAsync(id);
             if (tag != null)
             {
-                _unitOfWork.Tags.Remove(tag);
+                _unitOfWork.Tags.DeleteAsync(tag);
                 await _unitOfWork.CompleteAsync();
             }
         }

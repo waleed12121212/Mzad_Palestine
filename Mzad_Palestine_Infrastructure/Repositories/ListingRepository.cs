@@ -21,14 +21,13 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Listings.Where(l => l.UserId == userId).ToListAsync();
         }
 
-        public async Task<IEnumerable<Listing>> GetActiveListingsAsync( )
+        public async Task<IEnumerable<Listing>> GetActiveListingsAsync()
         {
             return await _context.Listings.Where(l => l.Status == ListingStatus.Active).ToListAsync();
         }
 
         public async Task<IEnumerable<Listing>> GetListingsByCategoryAsync(int categoryId)
         {
-            // نفترض وجود خاصية CategoryId في Listing
             return await _context.Listings.Where(l => l.CategoryId == categoryId).ToListAsync();
         }
     }

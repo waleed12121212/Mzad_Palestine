@@ -17,7 +17,7 @@ namespace Mzad_Palestine_Core.Models
         public PaymentMethod Method { get; set; }
         public PaymentEscrowStatus EscrowStatus { get; set; }
         public PaymentStatus Status { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
 
         // الملاحة
         public User User { get; set; }

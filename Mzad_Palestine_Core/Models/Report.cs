@@ -17,7 +17,7 @@ namespace Mzad_Palestine_Core.Models
         public string Reason { get; set; }
         public ReportStatus Status { get; set; }
         public int? ResolvedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // الملاحة
         public User Reporter { get; set; }

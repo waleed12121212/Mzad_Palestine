@@ -61,7 +61,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             var autoBid = await GetAutoBidAsync(id);
             if (autoBid != null)
             {
-                _unitOfWork.AutoBids.Remove(autoBid);
+                _unitOfWork.AutoBids.DeleteAsync(autoBid);
                 await _unitOfWork.CompleteAsync();
             }
         }

@@ -11,5 +11,7 @@ namespace Mzad_Palestine_Core.Interfaces
     {
         Task<IEnumerable<Bid>> GetBidsByAuctionAsync(int auctionId);
         Task<Bid> GetHighestBidAsync(int auctionId);
+        Task<IEnumerable<Bid>> GetAuctionBidsAsync(int auctionId);
+        Task<Bid> GetWinningBidAsync(int auctionId);
     }
 }

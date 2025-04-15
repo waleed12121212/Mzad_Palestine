@@ -25,10 +25,8 @@ namespace Mzad_Palestine_Infrastructure.Services
                 Method = Enum.Parse<PaymentMethod>(dto.Method),
                 Status = PaymentStatus.Pending,
                 TransactionDate = DateTime.UtcNow
-            };
-            
+            }; 
             await _repository.AddAsync(entity);
-            
             return new PaymentDto
             {
                 Id = entity.PaymentId,
@@ -39,7 +37,6 @@ namespace Mzad_Palestine_Infrastructure.Services
                 TransactionDate = entity.TransactionDate
             };
         }
-
         public async Task<IEnumerable<PaymentDto>> GetByUserIdAsync(int userId)
         {
             var payments = await _repository.GetPaymentsByUserAsync(userId);

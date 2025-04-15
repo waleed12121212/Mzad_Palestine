@@ -43,14 +43,20 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             _context.Set<T>().Update(entity);
         }
 
-        public void Remove(T entity)
-        {
-            _context.Set<T>().Remove(entity);
-        }
-
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id) != null;
+        }
+
+        public Task<T> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task DeleteAsync(T entity)
+        {
+            _context.Set<T>().Remove(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }

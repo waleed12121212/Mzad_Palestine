@@ -18,18 +18,18 @@ namespace Mzad_Palestine_Core.Models
         public int LocationId { get; set; }
         public ListingType Type { get; set; }
         public ListingStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // الملاحة
         // Navigation Properties
         public virtual User User { get; set; }
-        public virtual ICollection<Watchlist> Watchlists { get; set; }
-        public virtual ICollection<Report> Reports { get; set; }
+        public virtual ICollection<Watchlist> Watchlists { get; set; } = new HashSet<Watchlist>();
+        public virtual ICollection<Report> Reports { get; set; } = new HashSet<Report>();
         public virtual Auction Auction { get; set; }
-        public virtual ICollection<Review> Reviews { get; set; }
-        public virtual ICollection<ListingTag> ListingTags { get; set; }
-        public virtual ICollection<Invoice> Invoices { get; set; }
+        public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
+        public virtual ICollection<ListingTag> ListingTags { get; set; } = new HashSet<ListingTag>();
+        public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
 
         public Listing()
         {

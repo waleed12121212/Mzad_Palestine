@@ -52,14 +52,14 @@ namespace Mzad_Palestine_Infrastructure.Services
             return watchlist.Any();
         }
 
-        public async Task RemoveFromWatchlistAsync(int userId , int listingId)
+        public async Task DeleteFromWatchlistAsync(int userId , int listingId)
         {
             var watchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
                 w.UserId == userId && w.ListingId == listingId)).FirstOrDefault();
 
             if (watchlist != null)
             {
-                _unitOfWork.Watchlists.Remove(watchlist);
+                _unitOfWork.Watchlists.DeleteAsync(watchlist);
                 await _unitOfWork.CompleteAsync();
             }
         }

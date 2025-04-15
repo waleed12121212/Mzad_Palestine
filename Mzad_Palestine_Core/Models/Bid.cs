@@ -14,7 +14,7 @@ namespace Mzad_Palestine_Core.Models
         public int AuctionId { get; set; }
         public int UserId { get; set; }
         public decimal BidAmount { get; set; }
-        public DateTime BidTime { get; set; }
+        public DateTime BidTime { get; set; } = DateTime.UtcNow;
         public bool IsAutoBid { get; set; }
         public bool IsWinner { get; set; }
         public BidStatus Status { get; set; }

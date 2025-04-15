@@ -166,6 +166,9 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     b.Property<decimal>("BidIncrement")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("CurrentBid")
                         .HasColumnType("decimal(10,2)");
 
@@ -178,6 +181,10 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.Property<int>("ListingId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ReservePrice")
                         .HasColumnType("decimal(10,2)");

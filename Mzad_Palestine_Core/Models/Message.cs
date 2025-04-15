@@ -15,7 +15,7 @@ namespace Mzad_Palestine_Core.Models
         public int ReceiverId { get; set; }
         public string Subject { get; set; }
         public string Content { get; set; }
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; }
 
         // الملاحة

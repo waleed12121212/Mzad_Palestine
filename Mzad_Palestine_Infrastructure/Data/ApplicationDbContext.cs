@@ -13,13 +13,10 @@ namespace Mzad_Palestine_Infrastructure.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User , IdentityRole<int> , int>
     {
-        // Constructor مع خيارات DbContext
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
-
-        // DbSets للكيانات الأساسية
         public DbSet<User> Users { get; set; }
         public DbSet<Listing> Listings { get; set; }
         public DbSet<Auction> Auctions { get; set; }
@@ -38,6 +35,7 @@ namespace Mzad_Palestine_Infrastructure.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<CustomerSupportTicket> CustomerSupportTickets { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         // Override لـ OnModelCreating لتكوين العلاقات والقيود باستخدام Fluent API
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -82,6 +80,25 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .WithMany(u => u.Listings)
                       .HasForeignKey(l => l.UserId)
                       .OnDelete(DeleteBehavior.NoAction);
+            });
+            #endregion
+
+            #region تكوين Category
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.Property(c => c.Name)
+                      .IsRequired()
+                      .HasMaxLength(255);
+                entity.Property(c => c.Description)
+                      .HasColumnType("text");
+                entity.Property(c => c.ImageUrl)
+                      .HasMaxLength(255);
+                // العلاقة مع نفسها (فئة فرعية)
+                entity.HasOne(c => c.ParentCategory)
+                      .WithMany(c => c.SubCategories)
+                      .HasForeignKey(c => c.ParentCategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 

@@ -16,24 +16,24 @@ namespace Mzad_Palestine_Core.Models
         public UserRole Role { get; set; }
         public bool IsVerified { get; set; }
         public int ReputationScore { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
-        public ICollection<Listing> Listings { get; set; }
-        public ICollection<Bid> Bids { get; set; }
-        public ICollection<Payment> Payments { get; set; }
-        public ICollection<Message> SentMessages { get; set; }
-        public ICollection<Message> ReceivedMessages { get; set; }
-        public ICollection<Review> ReviewsGiven { get; set; }
-        public ICollection<Review> ReviewsReceived { get; set; }
-        public ICollection<Report> ReportsMade { get; set; }
-        public ICollection<Report> ReportsReceived { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
-        public ICollection<AutoBid> AutoBids { get; set; }
-        public ICollection<Dispute> Disputes { get; set; }
-        public ICollection<Subscription> Subscriptions { get; set; }
-        public ICollection<CustomerSupportTicket> CustomerSupportTickets { get; set; }
-        public ICollection<Watchlist> Watchlists { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
+        public ICollection<Listing> Listings { get; set; } = new HashSet<Listing>();
+        public ICollection<Bid> Bids { get; set; } = new HashSet<Bid>();
+        public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+        public ICollection<Message> SentMessages { get; set; } = new HashSet<Message>();
+        public ICollection<Message> ReceivedMessages { get; set; } = new HashSet<Message>();
+        public ICollection<Review> ReviewsGiven { get; set; } = new HashSet<Review>();
+        public ICollection<Review> ReviewsReceived { get; set; } = new HashSet<Review>();
+        public ICollection<Report> ReportsMade { get; set; } = new HashSet<Report>();
+        public ICollection<Report> ReportsReceived { get; set; } = new HashSet<Report>();
+        public ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
+        public ICollection<AutoBid> AutoBids { get; set; } = new HashSet<AutoBid>();
+        public ICollection<Dispute> Disputes { get; set; } = new HashSet<Dispute>();
+        public ICollection<Subscription> Subscriptions { get; set; } = new HashSet<Subscription>();
+        public ICollection<CustomerSupportTicket> CustomerSupportTickets { get; set; } = new HashSet<CustomerSupportTicket>();
+        public ICollection<Watchlist> Watchlists { get; set; } = new HashSet<Watchlist>();
+        public ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
     }
 }

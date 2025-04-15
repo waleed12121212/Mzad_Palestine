@@ -11,9 +11,9 @@ namespace Mzad_Palestine_Core.Models
         public int SubscriptionId { get; set; }
         public int UserId { get; set; }
         public string Plan { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public DateTime RenewalDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.UtcNow;
+        public DateTime EndDate { get; set; } = DateTime.UtcNow.AddMonths(1);
+        public DateTime RenewalDate { get; set; } = DateTime.UtcNow.AddMonths(1);
         public string Status { get; set; } // مثال: "active", "canceled", "expired"
 
         // الملاحة

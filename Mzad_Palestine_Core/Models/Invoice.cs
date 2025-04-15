@@ -13,11 +13,9 @@ namespace Mzad_Palestine_Core.Models
         public int UserId { get; set; }
         public int ListingId { get; set; }
         public decimal Amount { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime DueDate { get; set; } = DateTime.UtcNow.AddDays(7);
         public InvoiceStatus Status { get; set; }
-        public DateTime IssuedAt { get; set; }
-
-        // الملاحة
+        public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
         public User User { get; set; }
         public Listing Listing { get; set; }
     }

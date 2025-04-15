@@ -20,12 +20,12 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             var entity = new Listing
             {
-                Title = dto.Title ,
-                Description = dto.Description ,
-                Price = dto.Price ,
-                CategoryId = dto.CategoryId ,
-                LocationId = dto.LocationId ,
-                Type = Enum.Parse<ListingType>(dto.Type) ,
+                Title = dto.Title,
+                Description = dto.Description,
+                Price = dto.Price,
+                CategoryId = dto.CategoryId,
+                LocationId = dto.LocationId,
+                Type = dto.Type,
                 Status = ListingStatus.Active
             };
 
@@ -33,19 +33,19 @@ namespace Mzad_Palestine_Infrastructure.Services
 
             return new ListingDto
             {
-                Id = entity.ListingId ,
-                UserId = entity.UserId ,
-                Title = entity.Title ,
-                Description = entity.Description ,
-                Price = entity.Price ,
-                CategoryId = entity.CategoryId ,
-                LocationId = entity.LocationId ,
-                Type = entity.Type.ToString() ,
-                Status = entity.Status.ToString()
+                Id = entity.ListingId,
+                UserId = entity.UserId,
+                Title = entity.Title,
+                Description = entity.Description,
+                Price = entity.Price,
+                CategoryId = entity.CategoryId,
+                LocationId = entity.LocationId,
+                Type = entity.Type,
+                Status = entity.Status
             };
         }
 
-        public Task<IEnumerable<ListingDto>> GetAllAsync( )
+        public Task<IEnumerable<ListingDto>> GetAllAsync()
         {
             throw new NotImplementedException();
         }

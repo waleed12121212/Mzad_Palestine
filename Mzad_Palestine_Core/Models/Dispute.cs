@@ -1,6 +1,7 @@
 ﻿using Mzad_Palestine_Core.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Mzad_Palestine_Core.Models
         public int AuctionId { get; set; }
         public string Reason { get; set; }
         public DisputeStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int? ResolvedBy { get; set; }
 
         // الملاحة

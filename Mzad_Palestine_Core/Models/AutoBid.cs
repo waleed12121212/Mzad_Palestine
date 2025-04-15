@@ -15,8 +15,6 @@ namespace Mzad_Palestine_Core.Models
         public decimal MaxBid { get; set; }
         public decimal CurrentBid { get; set; }
         public AutoBidStatus Status { get; set; }
-
-        // الملاحة
         public User User { get; set; }
         public Auction Auction { get; set; }
     }

@@ -13,6 +13,6 @@ namespace Mzad_Palestine_Core.Models
         public string Description { get; set; }
 
         // الملاحة
-        public ICollection<ListingTag> ListingTags { get; set; }
+        public ICollection<ListingTag> ListingTags { get; set; } = new HashSet<ListingTag>();
     }
 }

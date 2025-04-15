@@ -51,5 +51,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             return await _dbSet.FindAsync(id) != null;
         }
+
+        public Task<T> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(T entity)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

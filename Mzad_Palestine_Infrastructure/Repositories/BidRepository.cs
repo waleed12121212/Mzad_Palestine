@@ -15,6 +15,11 @@ namespace Mzad_Palestine_Infrastructure.Repositories
     {
         public BidRepository(ApplicationDbContext context) : base(context) { }
 
+        public Task<IEnumerable<Bid>> GetAuctionBidsAsync(int auctionId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IEnumerable<Bid>> GetBidsByAuctionAsync(int auctionId)
         {
             return await _context.Bids.Where(b => b.AuctionId == auctionId).ToListAsync();
@@ -26,6 +31,11 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Where(b => b.AuctionId == auctionId)
                 .OrderByDescending(b => b.BidAmount)
                 .FirstOrDefaultAsync();
+        }
+
+        public Task<Bid> GetWinningBidAsync(int auctionId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

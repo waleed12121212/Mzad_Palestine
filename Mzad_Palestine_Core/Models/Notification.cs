@@ -15,7 +15,7 @@ namespace Mzad_Palestine_Core.Models
         public string Message { get; set; }
         public NotificationType Type { get; set; }
         public NotificationStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // الملاحة
         public User User { get; set; }

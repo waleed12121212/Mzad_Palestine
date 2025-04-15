@@ -5,7 +5,7 @@ namespace Mzad_Palestine_Core.Models
         public int TransactionId { get; set; }
         public int UserId { get; set; }
         public decimal Amount { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
         public string TransactionType { get; set; }
         public string Status { get; set; }
         public string Description { get; set; }

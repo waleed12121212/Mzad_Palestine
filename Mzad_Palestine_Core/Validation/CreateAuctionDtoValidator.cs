@@ -9,7 +9,10 @@ namespace Mzad_Palestine_Core.Validation
         {
             RuleFor(x => x.ListingId)
                 .NotEmpty().WithMessage("Listing ID is required");
-
+            RuleFor(x => x.Name)
+           .NotEmpty().WithMessage("الاسم مطلوب.")
+           .MaximumLength(100).WithMessage("الاسم يجب ألا يتجاوز 100 حرف.")
+           .MinimumLength(3).WithMessage("الاسم يجب ان يكون اكثر من 3 احرف ");
             RuleFor(x => x.StartTime)
                 .NotEmpty().WithMessage("Start time is required")
                 .GreaterThan(DateTime.Now).WithMessage("Start time must be in the future");

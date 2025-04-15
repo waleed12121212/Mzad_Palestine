@@ -11,7 +11,7 @@ namespace Mzad_Palestine_Core.Models
         public int WatchlistId { get; set; }
         public int UserId { get; set; }
         public int ListingId { get; set; }
-        public DateTime AddedAt { get; set; }
+        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
         // الملاحة
         public User User { get; set; }

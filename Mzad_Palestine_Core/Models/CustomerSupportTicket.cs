@@ -8,7 +8,7 @@ namespace Mzad_Palestine_Core.Models
         public int UserId { get; set; }
         public string Subject { get; set; }
         public string Description { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public TicketStatus Status { get; set; }
 
         // Navigation Property
