@@ -14,13 +14,11 @@ namespace Mzad_Palestine_API.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
-
         public AuthController(IAuthService authService, IUserService userService)
         {
             _authService = authService;
             _userService = userService;
         }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto request)
         {
@@ -34,7 +32,6 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
@@ -55,7 +52,6 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto request)
         {

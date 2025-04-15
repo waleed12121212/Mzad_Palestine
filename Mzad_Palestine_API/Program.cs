@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using MediatR;
 using AutoMapper;
 using Mzad_Palestine_Core.Interfaces.Common;
@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using FluentValidation.AspNetCore;
 using Mzad_Palestine_API.Middleware;
 using Mzad_Palestine_Core.Validation;
+using Microsoft.ML;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,6 +102,7 @@ builder.Services.AddScoped<IWatchlistService, WatchlistService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ILaptopPredictionService, LaptopPredictionService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));

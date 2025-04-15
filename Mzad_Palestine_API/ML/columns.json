@@ -1,0 +1,6 @@
+{
+    "Brand_columns": ["lenovo", "hp", "dell", "asus", "acer", "apple", "msi"],
+    "Processor_Name_columns": ["intel i3", "intel i5", "intel i7", "intel i9", "amd ryzen 3", "amd ryzen 5", "amd ryzen 7"],
+    "Display_type_columns": ["lcd", "led", "oled", "ips"],
+    "GPU_columns": ["nvidia", "amd", "intel"]
+}

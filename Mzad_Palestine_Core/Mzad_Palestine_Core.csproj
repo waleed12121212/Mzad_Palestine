@@ -18,6 +18,7 @@
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.3.0" />
+    <PackageReference Include="Microsoft.ML" Version="4.0.2" />
   </ItemGroup>
 
 </Project>
