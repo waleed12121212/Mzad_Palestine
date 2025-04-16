@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuctionController : ControllerBase
     {
@@ -19,12 +19,12 @@ namespace Mzad_Palestine_API.Controllers
         {
             var auction = new Auction
             {
-                ListingId = dto.ListingId,
-     
-                EndTime = dto.EndTime,
+                ListingId = dto.ListingId ,
+
+                EndTime = dto.EndTime ,
             };
             await _auctionService.CreateAuctionAsync(auction);
-            return CreatedAtAction(nameof(GetById), new { id = auction.AuctionId }, auction);
+            return CreatedAtAction(nameof(GetById) , new { id = auction.AuctionId } , auction);
         }
 
         [HttpGet("{id:int}")]
@@ -37,22 +37,22 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetActive()
+        public async Task<IActionResult> GetActive( )
         {
             var auctions = await _auctionService.GetOpenAuctionsAsync();
             return Ok(auctions);
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateAuctionDto dto)
+        public async Task<IActionResult> Update(int id , [FromBody] UpdateAuctionDto dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var auction = new Auction
             {
-                AuctionId = id,
-     
+                AuctionId = id ,
+
             };
-            await _auctionService.UpdateAuctionAsync(auction, userId);
+            await _auctionService.UpdateAuctionAsync(auction , userId);
             return Ok(auction);
         }
 
@@ -60,7 +60,7 @@ namespace Mzad_Palestine_API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            await _auctionService.DeleteAuctionAsync(id, userId);
+            await _auctionService.DeleteAuctionAsync(id , userId);
             return NoContent();
         }
 
@@ -79,14 +79,14 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpGet("open")]
-        public async Task<IActionResult> GetOpenAuctions()
+        public async Task<IActionResult> GetOpenAuctions( )
         {
             var auctions = await _auctionService.GetOpenAuctionsAsync();
             return Ok(auctions);
         }
 
         [HttpGet("closed")]
-        public async Task<IActionResult> GetClosedAuctions()
+        public async Task<IActionResult> GetClosedAuctions( )
         {
             var auctions = await _auctionService.GetClosedAuctionsAsync();
             return Ok(auctions);
@@ -105,7 +105,7 @@ namespace Mzad_Palestine_API.Controllers
         public async Task<IActionResult> CloseAuction(int id)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            await _auctionService.CloseAuctionAsync(id, userId);
+            await _auctionService.CloseAuctionAsync(id , userId);
             return NoContent();
         }
     }

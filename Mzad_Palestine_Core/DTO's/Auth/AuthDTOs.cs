@@ -48,4 +48,4 @@ namespace Mzad_Palestine_Core.DTOs
     {
         public string Token { get; set; }
     }
-} 
+}

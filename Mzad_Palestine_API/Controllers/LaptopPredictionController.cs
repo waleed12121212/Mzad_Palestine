@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class LaptopPredictionController : ControllerBase
     {
@@ -31,17 +31,17 @@ namespace Mzad_Palestine_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                return StatusCode(500 , new
                 {
-                    StatusCode = 500,
-                    Message = "Internal Server Error. Please try again later.",
+                    StatusCode = 500 ,
+                    Message = "Internal Server Error. Please try again later." ,
                     Detailed = ex.Message
                 });
             }
         }
 
         [HttpGet("metadata")]
-        public async Task<IActionResult> GetMetadata()
+        public async Task<IActionResult> GetMetadata( )
         {
             try
             {
@@ -50,10 +50,10 @@ namespace Mzad_Palestine_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                return StatusCode(500 , new
                 {
-                    StatusCode = 500,
-                    Message = "Internal Server Error. Please try again later.",
+                    StatusCode = 500 ,
+                    Message = "Internal Server Error. Please try again later." ,
                     Detailed = ex.Message
                 });
             }

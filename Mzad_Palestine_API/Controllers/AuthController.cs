@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
-        public AuthController(IAuthService authService, IUserService userService)
+        public AuthController(IAuthService authService , IUserService userService)
         {
             _authService = authService;
             _userService = userService;
@@ -24,7 +24,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var result = await _authService.LoginAsync(request.Username, request.Password);
+                var result = await _authService.LoginAsync(request.Username , request.Password);
                 return Ok(new { message = result });
             }
             catch (Exception ex)
@@ -39,12 +39,12 @@ namespace Mzad_Palestine_API.Controllers
             {
                 var user = new User
                 {
-                    UserName = request.Username,
-                    Email = request.Email,
+                    UserName = request.Username ,
+                    Email = request.Email ,
                     Phone = request.Phone
                 };
 
-                var result = await _authService.RegisterAsync(user, request.Password);
+                var result = await _authService.RegisterAsync(user , request.Password);
                 return Ok(new { message = result });
             }
             catch (Exception ex)
@@ -57,7 +57,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var result = await _authService.ChangePasswordAsync(request.Email, request.CurrentPassword, request.NewPassword);
+                var result = await _authService.ChangePasswordAsync(request.Email , request.CurrentPassword , request.NewPassword);
                 return Ok(new { message = result });
             }
             catch (Exception ex)
@@ -71,7 +71,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var result = await _authService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword);
+                var result = await _authService.ResetPasswordAsync(request.Email , request.Token , request.NewPassword);
                 return Ok(new { message = result });
             }
             catch (Exception ex)
@@ -99,7 +99,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var result = await _authService.ConfirmEmailAsync(request.UserId, request.Token);
+                var result = await _authService.ConfirmEmailAsync(request.UserId , request.Token);
                 return Ok(new { message = result });
             }
             catch (Exception ex)
@@ -136,34 +136,34 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            try
-            {
-                var users = await _userService.GetAllUsersAsync();
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetAll( )
+        //{
+        //    try
+        //    {
+        //        var users = await _userService.GetAllUsersAsync();
+        //        return Ok(users);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { error = ex.Message });
+        //    }
+        //}
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            try
-            {
-                var user = await _userService.GetUserByIdAsync(id);
-                if (user == null)
-                    return NotFound();
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
+        //[HttpGet("{id:int}")]
+        //public async Task<IActionResult> GetById(int id)
+        //{
+        //    try
+        //    {
+        //        var user = await _userService.GetUserByIdAsync(id);
+        //        if (user == null)
+        //            return NotFound();
+        //        return Ok(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { error = ex.Message });
+        //    }
+        //}
     }
 }
