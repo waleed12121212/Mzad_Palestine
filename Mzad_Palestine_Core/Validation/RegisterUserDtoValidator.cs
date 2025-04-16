@@ -22,7 +22,9 @@ namespace Mzad_Palestine_Core.Validation
                 .NotEmpty().MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("Phone is required.");
+                .NotEmpty().WithMessage("رقم الهاتف مطلوب.")
+                .Matches(@"^(\+970|0)(5[0-9]|2[2-9])[0-9]{7}$")
+                .WithMessage("رقم الهاتف غير صالح. يجب أن يبدأ الرقم بـ +970 أو 0، متبوعاً برقم المنطقة (5x أو 2x) و7 أرقام إضافية.");
 
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage("Role is required.");

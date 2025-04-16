@@ -61,19 +61,34 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Email) || 
+                    string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Phone))
+                {
+                    return BadRequest(new { error = "جميع الحقول مطلوبة" });
+                }
+
                 var user = new User
                 {
-                    UserName = request.Username ,
-                    Email = request.Email ,
-                    Phone = request.Phone
+                    UserName = request.Username,
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    FirstName = request.Username,
+                    LastName = request.Username,
+                    EmailConfirmed = true // تعيين البريد الإلكتروني كمؤكد مؤقتاً
                 };
 
-                var result = await _authService.RegisterAsync(user , request.Password);
-                return Ok(new { message = result });
+                var result = await _authService.RegisterAsync(user, request.Password);
+                if (result.StartsWith("تم إنشاء المستخدم"))
+                {
+                    return Ok(new { message = result });
+                }
+                return BadRequest(new { error = result });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                // التقاط الخطأ الداخلي إذا كان موجوداً
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                return BadRequest(new { error = $"حدث خطأ أثناء التسجيل: {innerException}" });
             }
         }
         [HttpPost("change-password")]

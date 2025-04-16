@@ -5,7 +5,7 @@ using Mzad_Palestine_Core.Interfaces.Services;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ListingController : ControllerBase
     {

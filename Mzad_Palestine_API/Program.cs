@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using MediatR;
 using AutoMapper;
 using Mzad_Palestine_Core.Interfaces.Common;
@@ -31,6 +31,10 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 9;
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedPhoneNumber = false;
+    options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -98,6 +102,9 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 // Register UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 // Register Services
 builder.Services.AddScoped<IUserService, UserService>();

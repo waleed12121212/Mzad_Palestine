@@ -23,9 +23,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         private readonly IConfiguration _configuration;
 
         public AuthRepository(
-            ApplicationDbContext context,
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
+            ApplicationDbContext context ,
+            UserManager<User> userManager ,
+            SignInManager<User> signInManager ,
             IConfiguration configuration)
         {
             _context = context;
@@ -34,7 +34,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             _configuration = configuration;
         }
 
-        public async Task<string> LoginAsync(string username, string password)
+        public async Task<string> LoginAsync(string username , string password)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "فشل تسجيل الدخول: المستخدم غير موجود";
 
-                var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+                var result = await _signInManager.CheckPasswordSignInAsync(user , password , false);
                 if (!result.Succeeded)
                     return "فشل تسجيل الدخول: كلمة المرور غير صحيحة";
 
@@ -56,7 +56,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
                 foreach (var role in userRoles)
                 {
-                    authClaims.Add(new Claim(ClaimTypes.Role, role));
+                    authClaims.Add(new Claim(ClaimTypes.Role , role));
                 }
 
                 var token = GenerateJwtToken(authClaims);
@@ -71,13 +71,13 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         private string GenerateJwtToken(List<Claim> claims)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var credentials = new SigningCredentials(key , SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(3),
+                issuer: _configuration["Jwt:Issuer"] ,
+                audience: _configuration["Jwt:Audience"] ,
+                claims: claims ,
+                expires: DateTime.UtcNow.AddHours(3) ,
                 signingCredentials: credentials
             );
 
@@ -92,16 +92,22 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
                 var tokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = _configuration["Jwt:Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = _configuration["Jwt:Audience"],
+                    ValidateIssuerSigningKey = true ,
+                    IssuerSigningKey = new SymmetricSecurityKey(key) ,
+                    ValidateIssuer = true ,
+                    ValidIssuer = _configuration["Jwt:Issuer"] ,
+                    ValidateAudience = true ,
+                    ValidAudience = _configuration["Jwt:Audience"] ,
                     ClockSkew = TimeSpan.Zero
                 };
 
-                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+                var principal = tokenHandler.ValidateToken(token , tokenValidationParameters , out SecurityToken validatedToken);
+
+                // التحقق من وجود التوكن في القائمة السوداء
+                var jti = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+                if (!string.IsNullOrEmpty(jti) && _revokedTokens.Contains(jti))
+                    return "الرمز غير صالح: تم إلغاء هذا التوكن";
+
                 return "الرمز صالح";
             }
             catch (Exception ex)
@@ -109,6 +115,8 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 return $"الرمز غير صالح: {ex.Message}";
             }
         }
+
+        private static readonly HashSet<string> _revokedTokens = new HashSet<string>();
 
         public async Task<string> LogoutAsync(string username)
         {
@@ -118,7 +126,14 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "المستخدم غير موجود";
 
+                // تسجيل الخروج من النظام
                 await _signInManager.SignOutAsync();
+
+                // تحديث SecurityStamp للمستخدم لإبطال الـ tokens الحالية
+                var result = await _userManager.UpdateSecurityStampAsync(user);
+                if (!result.Succeeded)
+                    return "فشل في تسجيل الخروج";
+
                 return "تم تسجيل الخروج بنجاح";
             }
             catch (Exception ex)
@@ -127,33 +142,50 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
-        public async Task<string> RegisterAsync(User user, string password)
+        public async Task<string> RegisterAsync(User user , string password)
         {
             try
             {
+                // التحقق من وجود المستخدم باسم المستخدم أو البريد الإلكتروني
                 var userExists = await _userManager.FindByNameAsync(user.UserName);
+                var emailExists = await _userManager.FindByEmailAsync(user.Email);
+
                 if (userExists != null)
                     return "المستخدم موجود بالفعل";
+                if (emailExists != null)
+                    return "البريد الإلكتروني مستخدم بالفعل";
+
+                // التحقق من صحة كلمة المرور
+                if (string.IsNullOrEmpty(password) || password.Length < 6)
+                    return "كلمة المرور يجب أن تكون على الأقل 6 أحرف";
 
                 user.SecurityStamp = Guid.NewGuid().ToString();
                 user.CreatedAt = DateTime.UtcNow;
+                user.IsActive = true;
+                user.Role = Mzad_Palestine_Core.Enums.UserRole.Seller;
+                user.Address = user.Address ?? "غير محدد";
 
-                var result = await _userManager.CreateAsync(user, password);
+                var result = await _userManager.CreateAsync(user , password);
                 if (!result.Succeeded)
-                    return string.Join(", ", result.Errors.Select(e => e.Description));
+                {
+                    var errors = result.Errors.Select(e => e.Description);
+                    return string.Join(", " , errors);
+                }
 
                 // تعيين الدور الافتراضي
-                await _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user , "User");
 
                 return "تم إنشاء المستخدم بنجاح";
             }
             catch (Exception ex)
             {
-                return $"حدث خطأ أثناء التسجيل: {ex.Message}";
+                // التقاط الخطأ الداخلي إذا كان موجوداً
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                return $"حدث خطأ أثناء التسجيل: {innerException}";
             }
         }
 
-        public async Task<string> ChangePasswordAsync(string email, string currentPassword, string newPassword)
+        public async Task<string> ChangePasswordAsync(string email , string currentPassword , string newPassword)
         {
             try
             {
@@ -161,9 +193,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "المستخدم غير موجود";
 
-                var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+                var result = await _userManager.ChangePasswordAsync(user , currentPassword , newPassword);
                 if (!result.Succeeded)
-                    return string.Join(", ", result.Errors.Select(e => e.Description));
+                    return string.Join(", " , result.Errors.Select(e => e.Description));
 
                 return "تم تغيير كلمة المرور بنجاح";
             }
@@ -173,7 +205,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
-        public async Task<string> ResetPasswordAsync(string email, string token, string newPassword)
+        public async Task<string> ResetPasswordAsync(string email , string token , string newPassword)
         {
             try
             {
@@ -181,9 +213,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "المستخدم غير موجود";
 
-                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+                var result = await _userManager.ResetPasswordAsync(user , token , newPassword);
                 if (!result.Succeeded)
-                    return string.Join(", ", result.Errors.Select(e => e.Description));
+                    return string.Join(", " , result.Errors.Select(e => e.Description));
 
                 return "تم إعادة تعيين كلمة المرور بنجاح";
             }
@@ -211,7 +243,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
-        public async Task<string> ConfirmEmailAsync(string userId, string token)
+        public async Task<string> ConfirmEmailAsync(string userId , string token)
         {
             try
             {
@@ -219,9 +251,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "المستخدم غير موجود";
 
-                var result = await _userManager.ConfirmEmailAsync(user, token);
+                var result = await _userManager.ConfirmEmailAsync(user , token);
                 if (!result.Succeeded)
-                    return string.Join(", ", result.Errors.Select(e => e.Description));
+                    return string.Join(", " , result.Errors.Select(e => e.Description));
 
                 return "تم تأكيد البريد الإلكتروني بنجاح";
             }
