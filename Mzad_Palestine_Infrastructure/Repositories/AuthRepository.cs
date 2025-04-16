@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +33,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             _signInManager = signInManager;
             _configuration = configuration;
         }
+
         public async Task<string> LoginAsync(string username, string password)
         {
             try
@@ -47,28 +48,19 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var authClaims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                };
 
                 foreach (var role in userRoles)
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
-                // 🔽 هذا هو المكان الصحيح لوضع كود إنشاء التوكن:
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["Jwt:Issuer"],
-                    audience: _configuration["Jwt:Audience"],
-                    expires: DateTime.Now.AddHours(3),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-
-                return new JwtSecurityTokenHandler().WriteToken(token);
+                var token = GenerateJwtToken(authClaims);
+                return token;
             }
             catch (Exception ex)
             {
@@ -76,8 +68,65 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
+        private string GenerateJwtToken(List<Claim> claims)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // تسجيل مستخدم جديد باستخدام كائن User وكلمة المرور
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(3),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> ValidateTokenAsync(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+                return "الرمز صالح";
+            }
+            catch (Exception ex)
+            {
+                return $"الرمز غير صالح: {ex.Message}";
+            }
+        }
+
+        public async Task<string> LogoutAsync(string username)
+        {
+            try
+            {
+                var user = await _userManager.FindByNameAsync(username);
+                if (user == null)
+                    return "المستخدم غير موجود";
+
+                await _signInManager.SignOutAsync();
+                return "تم تسجيل الخروج بنجاح";
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء تسجيل الخروج: {ex.Message}";
+            }
+        }
+
         public async Task<string> RegisterAsync(User user, string password)
         {
             try
@@ -197,30 +246,6 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             catch (Exception ex)
             {
                 return $"حدث خطأ أثناء إرسال رابط التأكيد: {ex.Message}";
-            }
-        }
-
-        public async Task<string> ValidateTokenAsync(string token)
-        {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]);
-                var tokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
-                return "الرمز صالح";
-            }
-            catch (Exception ex)
-            {
-                return $"الرمز غير صالح: {ex.Message}";
             }
         }
     }

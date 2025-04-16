@@ -1,4 +1,4 @@
-﻿using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using System;
@@ -27,6 +27,18 @@ namespace Mzad_Palestine_Infrastructure.Services
             catch (Exception ex)
             {
                 return $"حدث خطأ أثناء تسجيل الدخول: {ex.Message}";
+            }
+        }
+
+        public async Task<string> LogoutAsync(string username)
+        {
+            try
+            {
+                return await _authRepository.LogoutAsync(username);
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء تسجيل الخروج: {ex.Message}";
             }
         }
 

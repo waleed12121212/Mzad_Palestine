@@ -1,4 +1,4 @@
-﻿using Mzad_Palestine_Core.Models;
+using Mzad_Palestine_Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +12,9 @@ namespace Mzad_Palestine_Core.Interfaces
         // تسجيل الدخول
         Task<string> LoginAsync(string username,string password);
         
+        // تسجيل الخروج
+        Task<string> LogoutAsync(string username);
+        
         // تسجيل مستخدم جديد
         Task<string> RegisterAsync(User user,string password);
         Task<string> ChangePasswordAsync(string email, string currentPassword, string newPassword);
@@ -20,6 +23,5 @@ namespace Mzad_Palestine_Core.Interfaces
         Task<string> ConfirmEmailAsync(string userId, string token);
         Task<string> SendEmailConfirmationLinkAsync(string email);
         Task<string> ValidateTokenAsync(string token);
-
     }
 }

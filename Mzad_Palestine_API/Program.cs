@@ -38,12 +38,22 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 // ✨ مهم: تفعيل RoleManager
 builder.Services.AddScoped<RoleManager<IdentityRole<int>>>();
 
-// Register services
-builder.Services.AddScoped<ISupportService, SupportService>();
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,6 +61,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -62,6 +73,9 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+
+// Register services
+builder.Services.AddScoped<ISupportService, SupportService>();
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -115,7 +129,6 @@ builder.Services.AddControllers()
     .AddFluentValidation(config =>
         config.RegisterValidatorsFromAssemblyContaining<CreateAuctionDtoValidator>());
 
-// Controllers & Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -131,8 +144,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS
+app.UseCors("AllowAll");
+
+// Important: Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 // ✅ Seed Roles

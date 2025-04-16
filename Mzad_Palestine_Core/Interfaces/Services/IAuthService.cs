@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,8 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<string> RegisterAsync(User user, string password);
         // تسجيل الدخول
         Task<string> LoginAsync(string username, string password);
+        // تسجيل الخروج
+        Task<string> LogoutAsync(string username);
         // تغيير كلمة المرور
         Task<string> ChangePasswordAsync(string email, string currentPassword, string newPassword);
         

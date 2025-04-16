@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Mzad_Palestine_Core.DTOs;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using System;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("[controller]")]
+    [Route("Auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -32,6 +34,28 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                var username = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (string.IsNullOrEmpty(username))
+                {
+                    return BadRequest(new { error = "المستخدم غير موجود" });
+                }
+
+                var result = await _authService.LogoutAsync(username);
+                return Ok(new { message = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
