@@ -34,15 +34,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             _configuration = configuration;
         }
 
-        public async Task<string> LoginAsync(string username , string password)
+        public async Task<string> LoginAsync(string email, string password)
         {
             try
             {
-                var user = await _userManager.FindByNameAsync(username);
+                var user = await _userManager.FindByEmailAsync(email);
                 if (user == null)
                     return "فشل تسجيل الدخول: المستخدم غير موجود";
 
-                var result = await _signInManager.CheckPasswordSignInAsync(user , password , false);
+                var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
                 if (!result.Succeeded)
                     return "فشل تسجيل الدخول: كلمة المرور غير صحيحة";
 
@@ -56,7 +56,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
                 foreach (var role in userRoles)
                 {
-                    authClaims.Add(new Claim(ClaimTypes.Role , role));
+                    authClaims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
                 var token = GenerateJwtToken(authClaims);
@@ -105,7 +105,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
                 // التحقق من وجود التوكن في القائمة السوداء
                 var jti = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
-                if (!string.IsNullOrEmpty(jti) && _revokedTokens.Contains(jti))
+                if (!string.IsNullOrEmpty(jti) && RevokedTokens.Contains(jti))
                     return "الرمز غير صالح: تم إلغاء هذا التوكن";
 
                 return "الرمز صالح";
@@ -116,15 +116,35 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
-        private static readonly HashSet<string> _revokedTokens = new HashSet<string>();
+        public static readonly HashSet<string> RevokedTokens = new HashSet<string>();
 
         public async Task<string> LogoutAsync(string username)
         {
             try
             {
-                var user = await _userManager.FindByNameAsync(username);
+                // البحث عن المستخدم باستخدام البريد الإلكتروني
+                var user = await _userManager.FindByEmailAsync(username);
                 if (user == null)
-                    return "المستخدم غير موجود";
+                {
+                    // إذا لم يتم العثور عليه بالبريد الإلكتروني، جرب البحث باسم المستخدم
+                    user = await _userManager.FindByNameAsync(username);
+                    if (user == null)
+                        return "المستخدم غير موجود";
+                }
+
+                // الحصول على التوكن الحالي
+                var currentToken = await _userManager.GetAuthenticationTokenAsync(user, "JWT", "AccessToken");
+                if (!string.IsNullOrEmpty(currentToken))
+                {
+                    // إضافة التوكن إلى القائمة السوداء
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var token = tokenHandler.ReadJwtToken(currentToken);
+                    var jti = token.Id;
+                    if (!string.IsNullOrEmpty(jti))
+                    {
+                        RevokedTokens.Add(jti);
+                    }
+                }
 
                 // تسجيل الخروج من النظام
                 await _signInManager.SignOutAsync();
@@ -133,6 +153,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 var result = await _userManager.UpdateSecurityStampAsync(user);
                 if (!result.Succeeded)
                     return "فشل في تسجيل الخروج";
+
+                // إزالة التوكن من قاعدة البيانات
+                await _userManager.RemoveAuthenticationTokenAsync(user, "JWT", "AccessToken");
 
                 return "تم تسجيل الخروج بنجاح";
             }

@@ -7,6 +7,12 @@ using Mzad_Palestine_Core.Models;
 using System;
 using System.Threading.Tasks;
 using System.Security.Claims;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Mzad_Palestine_Core.DTO_s.User;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace Mzad_Palestine_API.Controllers
 {
@@ -22,12 +28,22 @@ namespace Mzad_Palestine_API.Controllers
             _userService = userService;
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto request)
+        public async Task<IActionResult> Login([FromBody] LoginUserDto request)
         {
             try
             {
-                var result = await _authService.LoginAsync(request.Username , request.Password);
-                return Ok(new { message = result });
+                if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+                {
+                    return BadRequest(new { error = "البريد الإلكتروني وكلمة المرور مطلوبان" });
+                }
+
+                var result = await _authService.LoginAsync(request.Email, request.Password);
+                if (result.StartsWith("حدث خطأ"))
+                {
+                    return BadRequest(new { error = result });
+                }
+
+                return Ok(new { token = result });
             }
             catch (Exception ex)
             {
@@ -35,24 +51,43 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             try
             {
-                var username = User.FindFirst(ClaimTypes.Name)?.Value;
-                if (string.IsNullOrEmpty(username))
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
                 {
-                    return BadRequest(new { error = "المستخدم غير موجود" });
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var username = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
                 var result = await _authService.LogoutAsync(username);
-                return Ok(new { message = result });
+                if (result == "تم تسجيل الخروج بنجاح")
+                {
+                    // Add the token to the revoked tokens list
+                    var jti = jwtToken.Id;
+                    if (!string.IsNullOrEmpty(jti))
+                    {
+                        Mzad_Palestine_Infrastructure.Repositories.AuthRepository.RevokedTokens.Add(jti);
+                    }
+                    return Ok(new { message = result });
+                }
+                return BadRequest(new { error = result });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = $"حدث خطأ أثناء تسجيل الخروج: {ex.Message}" });
             }
         }
 
@@ -61,7 +96,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Email) || 
+                if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Email) ||
                     string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Phone))
                 {
                     return BadRequest(new { error = "جميع الحقول مطلوبة" });
@@ -69,15 +104,15 @@ namespace Mzad_Palestine_API.Controllers
 
                 var user = new User
                 {
-                    UserName = request.Username,
-                    Email = request.Email,
-                    Phone = request.Phone,
-                    FirstName = request.Username,
-                    LastName = request.Username,
+                    UserName = request.Username ,
+                    Email = request.Email ,
+                    Phone = request.Phone ,
+                    FirstName = request.Username ,
+                    LastName = request.Username ,
                     EmailConfirmed = true // تعيين البريد الإلكتروني كمؤكد مؤقتاً
                 };
 
-                var result = await _authService.RegisterAsync(user, request.Password);
+                var result = await _authService.RegisterAsync(user , request.Password);
                 if (result.StartsWith("تم إنشاء المستخدم"))
                 {
                     return Ok(new { message = result });

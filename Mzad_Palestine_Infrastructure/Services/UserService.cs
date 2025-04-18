@@ -141,11 +141,32 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<UserDetailsDto> GetCurrentUserAsync()
         {
-            var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 throw new Exception("المستخدم غير مسجل الدخول");
 
-            return await GetUserByIdAsync(int.Parse(userId));
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new Exception("المستخدم غير موجود");
+
+            var roles = await _userManager.GetRolesAsync(user);
+            
+            return new UserDetailsDto
+            {
+                Id = user.Id,
+                Username = user.UserName,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.Phone,
+                Address = user.Address,
+                DateOfBirth = user.DateOfBirth,
+                Bio = user.Bio,
+                ProfilePicture = user.ProfilePicture,
+                Role = roles.FirstOrDefault() ?? "User",
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive
+            };
         }
 
         public async Task<UserDetailsDto> UpdateProfileAsync(int userId, UserProfileDto dto)

@@ -18,11 +18,11 @@ namespace Mzad_Palestine_Infrastructure.Services
             _authRepository = authRepository;
         }
 
-        public async Task<string> LoginAsync(string username, string password)
+        public async Task<string> LoginAsync(string email, string password)
         {
             try
             {
-                return await _authRepository.LoginAsync(username, password);
+                return await _authRepository.LoginAsync(email, password);
             }
             catch (Exception ex)
             {

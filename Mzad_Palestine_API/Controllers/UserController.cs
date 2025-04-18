@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.DTOs;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Mzad_Palestine_API.Controllers
 {
@@ -18,13 +21,27 @@ namespace Mzad_Palestine_API.Controllers
             _userService = userService;
         }
 
-        [Authorize]
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
         {
             try
             {
-                var user = await _userService.GetCurrentUserAsync();
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                }
+
+                var user = await _userService.GetUserByIdAsync(int.Parse(userId));
                 return Ok(user);
             }
             catch (Exception ex)
@@ -33,14 +50,27 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize]
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto profileDto)
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                var updatedUser = await _userService.UpdateProfileAsync(userId, profileDto);
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                }
+
+                var updatedUser = await _userService.UpdateProfileAsync(int.Parse(userId), profileDto);
                 return Ok(updatedUser);
             }
             catch (Exception ex)
@@ -49,14 +79,27 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost("profile-picture")]
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                var pictureUrl = await _userService.UploadProfilePictureAsync(userId, file);
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                }
+
+                var pictureUrl = await _userService.UploadProfilePictureAsync(int.Parse(userId), file);
                 return Ok(new { pictureUrl });
             }
             catch (Exception ex)
@@ -65,12 +108,26 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (userRole != "Admin")
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
+                }
+
                 var user = await _userService.GetUserByIdAsync(id);
                 return Ok(user);
             }
@@ -80,12 +137,26 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
             try
             {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (userRole != "Admin")
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
+                }
+
                 var users = await _userService.GetAllUsersAsync();
                 return Ok(users);
             }
@@ -95,12 +166,26 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (userRole != "Admin")
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
+                }
+
                 var result = await _userService.DeleteUserAsync(id);
                 if (result)
                     return Ok(new { message = "تم حذف المستخدم بنجاح" });
@@ -112,12 +197,26 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPut("{id}/role")]
         public async Task<IActionResult> ChangeUserRole(int id, [FromBody] ChangeUserRoleDto roleDto)
         {
             try
             {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (userRole != "Admin")
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
+                }
+
                 var result = await _userService.ChangeUserRoleAsync(id, roleDto.NewRole);
                 if (result)
                     return Ok(new { message = "تم تغيير دور المستخدم بنجاح" });
