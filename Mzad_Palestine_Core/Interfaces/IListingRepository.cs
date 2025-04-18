@@ -9,8 +9,9 @@ namespace Mzad_Palestine_Core.Interfaces
 {
     public interface IListingRepository : IGenericRepository<Listing>
     {
-        Task<IEnumerable<Listing>> GetListingsByUserAsync(int userId);
-        Task<IEnumerable<Listing>> GetActiveListingsAsync( );
-        Task<IEnumerable<Listing>> GetListingsByCategoryAsync(int categoryId);
+        Task<IEnumerable<Listing>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Listing>> GetActiveAsync();
+        Task<IEnumerable<Listing>> GetByCategoryAsync(int categoryId);
+        Task UpdateAsync(Listing entity);
     }
 }

@@ -21,7 +21,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Listings.Where(l => l.UserId == userId).ToListAsync();
         }
 
-        public async Task<IEnumerable<Listing>> GetActiveListingsAsync()
+        public async Task<IEnumerable<Listing>> GetActiveListingsAsync( )
         {
             return await _context.Listings.Where(l => l.Status == ListingStatus.Active).ToListAsync();
         }
@@ -29,6 +29,27 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<IEnumerable<Listing>> GetListingsByCategoryAsync(int categoryId)
         {
             return await _context.Listings.Where(l => l.CategoryId == categoryId).ToListAsync();
+        }
+
+        public Task<IEnumerable<Listing>> GetByUserIdAsync(int userId)
+        {
+            return GetListingsByUserAsync(userId);
+        }
+
+        public Task<IEnumerable<Listing>> GetActiveAsync()
+        {
+            return GetActiveListingsAsync();
+        }
+
+        public Task<IEnumerable<Listing>> GetByCategoryAsync(int categoryId)
+        {
+            return GetListingsByCategoryAsync(categoryId);
+        }
+
+        public async Task UpdateAsync(Listing entity)
+        {
+            _context.Listings.Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }

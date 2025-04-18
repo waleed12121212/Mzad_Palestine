@@ -9,6 +9,7 @@ namespace Mzad_Palestine_Core.Enums
     public enum ListingStatus
     {
         Active,
+        Inactive,
         Sold,
         Expired
     }
