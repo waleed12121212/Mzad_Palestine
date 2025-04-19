@@ -42,7 +42,10 @@ namespace Mzad_Palestine_Infrastructure.Services
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                ParentCategoryId = dto.ParentCategoryId
+                ImageUrl = dto.ImageUrl,
+                ParentCategoryId = dto.ParentCategoryId,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
             };
 
             await _unitOfWork.Categories.AddAsync(category);

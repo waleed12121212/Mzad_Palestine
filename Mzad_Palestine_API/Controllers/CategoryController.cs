@@ -8,18 +8,18 @@ using Mzad_Palestine_Core.DTOs.Category;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("Category")]
     [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
         }
 
-        [HttpGet]
+        [HttpGet("get-all")]
         public async Task<IActionResult> GetAll()
         {
             try
@@ -33,7 +33,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -49,7 +49,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
         {
             try
@@ -78,7 +78,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryDto dto)
         {
             try
@@ -111,7 +111,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try

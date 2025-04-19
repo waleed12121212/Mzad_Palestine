@@ -11,6 +11,9 @@ namespace Mzad_Palestine_Core.DTOs.Category
         [StringLength(500, ErrorMessage = "الوصف يجب أن لا يتجاوز 500 حرف")]
         public string Description { get; set; }
 
+        [StringLength(255, ErrorMessage = "رابط الصورة يجب أن لا يتجاوز 255 حرف")]
+        public string ImageUrl { get; set; }
+
         public int? ParentCategoryId { get; set; }
     }
 } 
