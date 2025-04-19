@@ -38,20 +38,51 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto)
         {
-            var category = new Category
+            try
             {
-                Name = dto.Name,
-                Description = dto.Description,
-                ImageUrl = dto.ImageUrl,
-                ParentCategoryId = dto.ParentCategoryId,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
+                // التحقق من عدم وجود تصنيف بنفس الاسم
+                var existingCategory = await _unitOfWork.Categories
+                    .FindAsync(c => c.Name.ToLower() == dto.Name.ToLower());
+                
+                if (existingCategory.Any())
+                {
+                    throw new Exception("يوجد تصنيف بنفس الاسم");
+                }
 
-            await _unitOfWork.Categories.AddAsync(category);
-            await _unitOfWork.CompleteAsync();
+                // التحقق من وجود التصنيف الأب إذا تم تحديده
+                if (dto.ParentCategoryId.HasValue)
+                {
+                    var parentCategory = await _unitOfWork.Categories.GetByIdAsync(dto.ParentCategoryId.Value);
+                    if (parentCategory == null)
+                    {
+                        throw new Exception("التصنيف الأب غير موجود");
+                    }
+                }
 
-            return await GetByIdAsync(category.Id);
+                var category = new Category
+                {
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    ImageUrl = dto.ImageUrl,
+                    ParentCategoryId = dto.ParentCategoryId,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+
+                await _unitOfWork.Categories.AddAsync(category);
+                var result = await _unitOfWork.CompleteAsync();
+
+                if (result <= 0)
+                {
+                    throw new Exception("فشل في إضافة التصنيف");
+                }
+
+                return await GetByIdAsync(category.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء إنشاء التصنيف: {ex.Message}");
+            }
         }
 
         public async Task<CategoryDto> UpdateAsync(int id, UpdateCategoryDto dto)

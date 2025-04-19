@@ -20,7 +20,7 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll( )
         {
             try
             {
@@ -54,6 +54,11 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { error = "البيانات غير صالحة", details = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                }
+
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
@@ -69,6 +74,11 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "غير مصرح لك بإنشاء تصنيف" });
                 }
 
+                if (string.IsNullOrWhiteSpace(dto.Name))
+                {
+                    return BadRequest(new { error = "اسم التصنيف مطلوب" });
+                }
+
                 var category = await _categoryService.CreateAsync(dto);
                 return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
             }
@@ -79,11 +89,11 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryDto dto)
+        public async Task<IActionResult> Update(int id , [FromBody] UpdateCategoryDto dto)
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -102,7 +112,7 @@ namespace Mzad_Palestine_API.Controllers
                 if (category == null)
                     return NotFound(new { error = "التصنيف غير موجود" });
 
-                var updatedCategory = await _categoryService.UpdateAsync(id, dto);
+                var updatedCategory = await _categoryService.UpdateAsync(id , dto);
                 return Ok(updatedCategory);
             }
             catch (Exception ex)
@@ -116,7 +126,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -144,4 +154,4 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
     }
-} 
+}

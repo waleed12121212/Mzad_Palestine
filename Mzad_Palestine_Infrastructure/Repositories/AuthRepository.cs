@@ -21,17 +21,20 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
         public AuthRepository(
-            ApplicationDbContext context ,
-            UserManager<User> userManager ,
-            SignInManager<User> signInManager ,
-            IConfiguration configuration)
+            ApplicationDbContext context,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IConfiguration configuration,
+            RoleManager<IdentityRole<int>> roleManager)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _roleManager = roleManager;
         }
 
         public async Task<string> LoginAsync(string email, string password)
@@ -46,25 +49,81 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (!result.Succeeded)
                     return "فشل تسجيل الدخول: كلمة المرور غير صحيحة";
 
+                // التحقق من وجود أدوار للمستخدم
                 var userRoles = await _userManager.GetRolesAsync(user);
-                var authClaims = new List<Claim>
+                
+                // إذا لم يكن للمستخدم أي دور، قم بتعيين دور "User" له
+                if (!userRoles.Any())
                 {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-                };
+                    // التحقق من وجود الدور "User"
+                    var roleExists = await _roleManager.RoleExistsAsync("User");
+                    if (!roleExists)
+                    {
+                        // إنشاء الدور إذا لم يكن موجوداً
+                        var role = new IdentityRole<int>("User");
+                        var createRoleResult = await _roleManager.CreateAsync(role);
+                        if (!createRoleResult.Succeeded)
+                        {
+                            return $"فشل في إنشاء الدور: {string.Join(", ", createRoleResult.Errors.Select(e => e.Description))}";
+                        }
+                    }
 
+                    // إضافة الدور للمستخدم
+                    var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+                    if (!addToRoleResult.Succeeded)
+                    {
+                        return $"فشل في تعيين الدور للمستخدم: {string.Join(", ", addToRoleResult.Errors.Select(e => e.Description))}";
+                    }
+
+                    // إعادة تحميل أدوار المستخدم
+                    userRoles = await _userManager.GetRolesAsync(user);
+                }
+
+                // التأكد من أن لدينا على الأقل دور واحد
+                if (!userRoles.Any())
+                {
+                    var allRoles = await _roleManager.Roles.ToListAsync();
+                    var availableRoles = string.Join(", ", allRoles.Select(r => r.Name));
+                    return $"فشل في الحصول على صلاحيات المستخدم بعد المحاولة. الأدوار المتاحة: {availableRoles}";
+                }
+
+                var authClaims = new List<Claim>();
+
+                // إضافة الأدوار أولاً
                 foreach (var role in userRoles)
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
+                // إضافة باقي المعلومات
+                authClaims.AddRange(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                });
+
                 var token = GenerateJwtToken(authClaims);
+
+                // التحقق من وجود الدور في التوكن
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var roleInToken = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(roleInToken))
+                {
+                    // إرجاع تفاصيل أكثر عن المشكلة
+                    var allClaims = jwtToken.Claims.Select(c => $"{c.Type}: {c.Value}").ToList();
+                    return $"فشل في إنشاء التوكن: لم يتم العثور على الصلاحيات. Claims الموجودة: {string.Join(", ", allClaims)}";
+                }
+
                 return token;
             }
             catch (Exception ex)
             {
-                return $"حدث خطأ أثناء تسجيل الدخول: {ex.Message}";
+                return $"حدث خطأ أثناء تسجيل الدخول: {ex.Message} - {ex.StackTrace}";
             }
         }
 
