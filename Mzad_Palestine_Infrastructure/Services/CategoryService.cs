@@ -1,6 +1,10 @@
-using Mzad_Palestine_Core.Interfaces;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Mzad_Palestine_Core.DTOs.Category;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
+using Mzad_Palestine_Core.Interfaces.Common;
+using Mzad_Palestine_Core.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,49 +15,82 @@ namespace Mzad_Palestine_Infrastructure.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _categoryRepository = categoryRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public Task<Category> AddAsync(Category category)
+        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<CategoryDto> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+            return _mapper.Map<CategoryDto>(category);
         }
 
-        public Task<IEnumerable<Category>> GetActiveCategoriesAsync()
+        public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto)
         {
-            throw new NotImplementedException();
+            var category = new Category
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                ParentCategoryId = dto.ParentCategoryId
+            };
+
+            await _unitOfWork.Categories.AddAsync(category);
+            await _unitOfWork.CompleteAsync();
+
+            return await GetByIdAsync(category.Id);
         }
 
-        public Task<IEnumerable<Category>> GetAllAsync()
+        public async Task<CategoryDto> UpdateAsync(int id, UpdateCategoryDto dto)
         {
-            throw new NotImplementedException();
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+            if (category == null)
+                throw new Exception("التصنيف غير موجود");
+
+            category.Name = dto.Name;
+            category.Description = dto.Description;
+            category.ParentCategoryId = dto.ParentCategoryId;
+            category.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.Categories.Update(category);
+            await _unitOfWork.CompleteAsync();
+
+            return await GetByIdAsync(id);
         }
 
-        public Task<Category> GetByIdAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+            if (category == null)
+                return false;
+
+            await _unitOfWork.Categories.DeleteAsync(category);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
         }
 
-        public Task<IEnumerable<Category>> GetByParentIdAsync(int parentId)
+        public async Task<IEnumerable<Category>> GetActiveCategoriesAsync()
         {
-            throw new NotImplementedException();
+            return await _unitOfWork.Categories.GetActiveCategoriesAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetByParentIdAsync(int parentId)
+        {
+            return await _unitOfWork.Categories.GetByParentIdAsync(parentId);
         }
 
         public Task<bool> ToggleActiveStatusAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Category> UpdateAsync(Category category)
         {
             throw new NotImplementedException();
         }

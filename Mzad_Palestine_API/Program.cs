@@ -18,6 +18,7 @@ using Mzad_Palestine_API.Middleware;
 using Mzad_Palestine_Core.Validation;
 using Microsoft.ML;
 using System.IdentityModel.Tokens.Jwt;
+using Mzad_Palestine_Core.Interfaces.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,6 +118,7 @@ builder.Services.AddScoped<ISupportService, SupportService>();
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 builder.Services.AddScoped<IBidRepository, BidRepository>();

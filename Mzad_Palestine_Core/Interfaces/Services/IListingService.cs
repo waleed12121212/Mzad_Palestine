@@ -1,4 +1,4 @@
-﻿using Mzad_Palestine_Core.DTO_s.Listing;
+﻿using Mzad_Palestine_Core.DTOs.Listing;
 using System;
 using System.Collections.Generic;
 using System.Linq;

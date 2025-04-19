@@ -1,5 +1,6 @@
-﻿using Mzad_Palestine_Core.Interfaces.Common;
-using Mzad_Palestine_Core.Interfaces;
+﻿using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces.Common;
+using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,8 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             ITagRepository tagRepository ,
             IWatchlistRepository watchlistRepository ,
             ISubscriptionRepository subscriptionRepository ,
-            ICustomerSupportTicketRepository customerSupportTicketRepository)
+            ICustomerSupportTicketRepository customerSupportTicketRepository ,
+            ICategoryRepository categoryRepository)
         {
             _context = context;
             Users = userRepository;
@@ -45,6 +47,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             Watchlists = watchlistRepository;
             Subscriptions = subscriptionRepository;
             CustomerSupportTickets = customerSupportTicketRepository;
+            Categories = categoryRepository;
         }
 
         public IUserRepository Users { get; }
@@ -62,6 +65,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public IWatchlistRepository Watchlists { get; }
         public ISubscriptionRepository Subscriptions { get; }
         public ICustomerSupportTicketRepository CustomerSupportTickets { get; }
+        public ICategoryRepository Categories { get; }
 
         public async Task<int> CompleteAsync( )
         {

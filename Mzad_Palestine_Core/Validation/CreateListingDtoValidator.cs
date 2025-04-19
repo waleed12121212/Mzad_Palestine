@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Mzad_Palestine_Core.DTO_s.Listing;
+using Mzad_Palestine_Core.DTOs.Listing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,25 +10,26 @@ namespace Mzad_Palestine_Core.Validation
 {
     public class CreateListingDtoValidator : AbstractValidator<CreateListingDto>
     {
-        public CreateListingDtoValidator( )
+        public CreateListingDtoValidator()
         {
             RuleFor(x => x.Title)
-                .NotEmpty().WithMessage("Title is required.");
+                .NotEmpty().WithMessage("عنوان المنتج مطلوب")
+                .MaximumLength(100).WithMessage("العنوان يجب أن لا يتجاوز 100 حرف");
 
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Description is required.");
+                .NotEmpty().WithMessage("وصف المنتج مطلوب")
+                .MaximumLength(1000).WithMessage("الوصف يجب أن لا يتجاوز 1000 حرف");
 
-            RuleFor(x => x.Price)
-                .GreaterThan(0).WithMessage("Price must be greater than zero.");
+            RuleFor(x => x.StartingPrice)
+                .NotEmpty().WithMessage("السعر الابتدائي مطلوب")
+                .GreaterThan(0).WithMessage("السعر يجب أن يكون أكبر من 0");
 
             RuleFor(x => x.CategoryId)
-                .GreaterThan(0).WithMessage("Category is required.");
+                .NotEmpty().WithMessage("التصنيف مطلوب");
 
-            RuleFor(x => x.LocationId)
-                .GreaterThan(0).WithMessage("Location is required.");
-
-            RuleFor(x => x.Type)
-                .NotEmpty().WithMessage("Type is required.");
+            RuleFor(x => x.EndDate)
+                .NotEmpty().WithMessage("تاريخ انتهاء المزاد مطلوب")
+                .GreaterThan(DateTime.UtcNow).WithMessage("تاريخ انتهاء المزاد يجب أن يكون في المستقبل");
         }
     }
 }

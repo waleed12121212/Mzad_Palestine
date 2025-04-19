@@ -40,7 +40,7 @@ namespace Mzad_Palestine_Infrastructure.Services
         public async Task<Subscription> GetUserActiveSubscriptionAsync(int userId)
         {
             var subscriptions = await _unitOfWork.Subscriptions.FindAsync(s =>
-                s.UserId == userId && s.Status == "active" && s.EndDate > DateTime.UtcNow);
+                s.UserId == userId && s.Status.ToLower() == "active" && s.EndDate > DateTime.UtcNow);
             return subscriptions.FirstOrDefault();
         }
 

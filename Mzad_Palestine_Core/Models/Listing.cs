@@ -4,40 +4,55 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mzad_Palestine_Core.Models
 {
     public class Listing
     {
         public int ListingId { get; set; }
-        public int UserId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
+        public decimal StartingPrice { get; set; }
         public int CategoryId { get; set; }
-        public int LocationId { get; set; }
-        public ListingType Type { get; set; }
+        public int UserId { get; set; }
         public ListingStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime EndDate { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsSold { get; set; }
 
-        // الملاحة
-        // Navigation Properties
-        public virtual User User { get; set; }
-        public virtual ICollection<Watchlist> Watchlists { get; set; } = new HashSet<Watchlist>();
-        public virtual ICollection<Report> Reports { get; set; } = new HashSet<Report>();
+        [ForeignKey("CategoryId")]
+        public Category Category { get; set; }
+
+        [ForeignKey("UserId")]
+        public User User { get; set; }
+
         public virtual Auction Auction { get; set; }
-        public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
-        public virtual ICollection<ListingTag> ListingTags { get; set; } = new HashSet<ListingTag>();
-        public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
+        public virtual ICollection<Bid> Bids { get; set; }
+        public virtual ICollection<Review> Reviews { get; set; }
+        public virtual ICollection<Report> Reports { get; set; }
+        public virtual ICollection<ListingImage> Images { get; set; }
+        public virtual ICollection<Invoice> Invoices { get; set; }
+        public virtual ICollection<ListingTag> ListingTags { get; set; }
+        public virtual ICollection<Watchlist> Watchlists { get; set; }
 
         public Listing()
         {
-            Watchlists = new HashSet<Watchlist>();
-            Reports = new HashSet<Report>();
+            Bids = new HashSet<Bid>();
             Reviews = new HashSet<Review>();
-            ListingTags = new HashSet<ListingTag>();
+            Reports = new HashSet<Report>();
+            Images = new HashSet<ListingImage>();
             Invoices = new HashSet<Invoice>();
+            ListingTags = new HashSet<ListingTag>();
+            Watchlists = new HashSet<Watchlist>();
+            CreatedAt = DateTime.UtcNow;
+            IsActive = true;
+            IsSold = false;
+            Status = ListingStatus.Active;
         }
     }
 }

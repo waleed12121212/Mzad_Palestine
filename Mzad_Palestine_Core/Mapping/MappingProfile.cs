@@ -5,7 +5,6 @@ using Mzad_Palestine_Core.DTO_s.Bid;
 using Mzad_Palestine_Core.DTO_s.Customer_Support;
 using Mzad_Palestine_Core.DTO_s.Dispute;
 using Mzad_Palestine_Core.DTO_s.Invoice;
-using Mzad_Palestine_Core.DTO_s.Listing;
 using Mzad_Palestine_Core.DTO_s.Message;
 using Mzad_Palestine_Core.DTO_s.Notification;
 using Mzad_Palestine_Core.DTO_s.Payment;
@@ -15,6 +14,7 @@ using Mzad_Palestine_Core.DTO_s.Subscription;
 using Mzad_Palestine_Core.DTO_s.Tag;
 using Mzad_Palestine_Core.DTO_s.User;
 using Mzad_Palestine_Core.DTO_s.Watchlist;
+using Mzad_Palestine_Core.DTOs.Listing;
 using Mzad_Palestine_Core.Models;
 using System;
 using System.Collections.Generic;
@@ -36,9 +36,8 @@ namespace Mzad_Palestine_Core.Mapping
             // No need to ignore Id as it will be set by Identity framework
 
             // Listing mapping
-            CreateMap<Listing , ListingDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.ListingId));
-            CreateMap<CreateListingDto , Listing>();
+            CreateMap<Listing, ListingDto>();
+            CreateMap<CreateListingDto, Listing>();
 
             // Auction mapping
             CreateMap<Auction , AuctionDto>()

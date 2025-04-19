@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
@@ -13,12 +13,24 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 {
     public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
     {
-        public CategoryRepository(ApplicationDbContext context) : base(context) { }
-
-        public async Task<IEnumerable<Category>> GetSubCategoriesAsync(int parentId)
+        public CategoryRepository(ApplicationDbContext context) : base(context)
         {
-            // نفترض أن هناك خاصية ParentId في Category
-            return await _context.Set<Category>().Where(c => c.ParentCategoryId == parentId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetActiveCategoriesAsync()
+        {
+            return await _context.Set<Category>()
+                .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetByParentIdAsync(int parentId)
+        {
+            return await _context.Set<Category>()
+                .Include(c => c.ParentCategory)
+                .Where(c => c.ParentCategoryId == parentId)
+                .ToListAsync();
         }
     }
 }

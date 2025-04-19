@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Mzad_Palestine_Core.DTO_s.Listing;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.DTOs.Listing;
 
 namespace Mzad_Palestine_API.Controllers
 {
@@ -37,7 +37,7 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var listing = await _listingService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById) , new { id = listing.Id } , listing);
+                return CreatedAtAction(nameof(GetById) , new { id = listing.ListingId } , listing);
             }
             catch (Exception ex)
             {
