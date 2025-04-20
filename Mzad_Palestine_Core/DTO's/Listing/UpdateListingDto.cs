@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace Mzad_Palestine_Core.DTOs.Listing
 {
@@ -23,7 +22,7 @@ namespace Mzad_Palestine_Core.DTOs.Listing
         [Required(ErrorMessage = "تاريخ انتهاء المزاد مطلوب")]
         public DateTime EndDate { get; set; }
 
-        public List<IFormFile> NewImages { get; set; }
+        public List<string> NewImages { get; set; }
         public List<string> ImagesToDelete { get; set; }
     }
 } 

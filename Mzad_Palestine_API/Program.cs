@@ -153,6 +153,7 @@ builder.Services.AddScoped<ISubscriptionRepository , SubscriptionRepository>();
 builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTicketRepository>();
 builder.Services.AddScoped<ISupportRepository , SupportRepository>();
 builder.Services.AddScoped<IAuthRepository , AuthRepository>();
+builder.Services.AddScoped<IListingImageRepository, ListingImageRepository>();
 
 // Register UnitOfWork
 builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();

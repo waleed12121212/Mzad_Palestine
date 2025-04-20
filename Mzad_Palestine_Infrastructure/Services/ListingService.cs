@@ -17,7 +17,7 @@ namespace Mzad_Palestine_Infrastructure.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public ListingService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ListingService(IUnitOfWork unitOfWork , IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -27,15 +27,43 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             var listing = new Listing
             {
-                Title = dto.Title,
-                Description = dto.Description,
-                StartingPrice = dto.StartingPrice,
-                CategoryId = dto.CategoryId,
-                EndDate = dto.EndDate
+                Title = dto.Title ,
+                Description = dto.Description ,
+                StartingPrice = dto.StartingPrice ,
+                Price = dto.StartingPrice ,
+                CategoryId = dto.CategoryId ,
+                EndDate = dto.EndDate ,
+                Status = ListingStatus.Active ,
+                IsActive = true ,
+                IsSold = false ,
+                CreatedAt = DateTime.UtcNow ,
+                UserId = int.Parse(dto.UserId)
             };
 
             await _unitOfWork.Listings.AddAsync(listing);
             await _unitOfWork.CompleteAsync();
+
+            if (dto.Images != null && dto.Images.Any())
+            {
+                var images = dto.Images.Select(imageUrl => new ListingImage
+                {
+                    ListingId = listing.ListingId ,
+                    ImageUrl = imageUrl ,
+                    CreatedAt = DateTime.UtcNow ,
+                    IsMainImage = false
+                }).ToList();
+
+                if (images.Any())
+                {
+                    images.First().IsMainImage = true;
+                }
+
+                foreach (var image in images)
+                {
+                    await _unitOfWork.ListingImages.AddAsync(image);
+                }
+                await _unitOfWork.CompleteAsync();
+            }
 
             return await GetByIdAsync(listing.ListingId);
         }
@@ -46,7 +74,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             return _mapper.Map<ListingDto>(listing);
         }
 
-        public async Task<IEnumerable<ListingDto>> GetAllAsync()
+        public async Task<IEnumerable<ListingDto>> GetAllAsync( )
         {
             var listings = await _unitOfWork.Listings.GetAllAsync();
             return _mapper.Map<IEnumerable<ListingDto>>(listings);
@@ -64,7 +92,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             return _mapper.Map<IEnumerable<ListingDto>>(listings);
         }
 
-        public async Task<IEnumerable<ListingDto>> GetActiveAsync()
+        public async Task<IEnumerable<ListingDto>> GetActiveAsync( )
         {
             var listings = await _unitOfWork.Listings.GetActiveAsync();
             return _mapper.Map<IEnumerable<ListingDto>>(listings);
@@ -82,6 +110,42 @@ namespace Mzad_Palestine_Infrastructure.Services
             listing.CategoryId = dto.CategoryId;
             listing.EndDate = dto.EndDate;
             listing.UpdatedAt = DateTime.UtcNow;
+
+            // Delete images if specified
+            if (dto.ImagesToDelete != null && dto.ImagesToDelete.Any())
+            {
+                var imagesToDelete = await _unitOfWork.ListingImages.FindAsync(
+                    img => img.ListingId == id && dto.ImagesToDelete.Contains(img.ImageUrl));
+                
+                foreach (var image in imagesToDelete)
+                {
+                    await _unitOfWork.ListingImages.DeleteAsync(image);
+                }
+            }
+
+            // Add new images if provided
+            if (dto.NewImages != null && dto.NewImages.Any())
+            {
+                var images = dto.NewImages.Select(imageUrl => new ListingImage
+                {
+                    ListingId = listing.ListingId,
+                    ImageUrl = imageUrl,
+                    CreatedAt = DateTime.UtcNow,
+                    IsMainImage = false
+                }).ToList();
+
+                // If there are no existing images, set the first new image as main
+                var existingImages = await _unitOfWork.ListingImages.GetByListingIdAsync(id);
+                if (!existingImages.Any() && images.Any())
+                {
+                    images.First().IsMainImage = true;
+                }
+
+                foreach (var image in images)
+                {
+                    await _unitOfWork.ListingImages.AddAsync(image);
+                }
+            }
 
             _unitOfWork.Listings.Update(listing);
             await _unitOfWork.CompleteAsync();

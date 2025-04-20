@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mzad_Palestine_Core.DTOs.Listing
@@ -23,6 +22,9 @@ namespace Mzad_Palestine_Core.DTOs.Listing
         [Required(ErrorMessage = "تاريخ انتهاء المزاد مطلوب")]
         public DateTime EndDate { get; set; }
 
-        public List<IFormFile> Images { get; set; }
+        [Required(ErrorMessage = "الصور مطلوبة")]
+        public List<string> Images { get; set; }
+
+        public string UserId { get; set; }
     }
 } 

@@ -57,9 +57,10 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public virtual Task DeleteAsync(T entity)
+        public virtual async Task DeleteAsync(T entity)
         {
-            throw new NotImplementedException();
+            _dbSet.Remove(entity);
+            await Task.CompletedTask;
         }
     }
 }

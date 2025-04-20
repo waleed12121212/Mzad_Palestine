@@ -29,7 +29,8 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             IWatchlistRepository watchlistRepository ,
             ISubscriptionRepository subscriptionRepository ,
             ICustomerSupportTicketRepository customerSupportTicketRepository ,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository ,
+            IListingImageRepository listingImageRepository)
         {
             _context = context;
             Users = userRepository;
@@ -48,6 +49,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             Subscriptions = subscriptionRepository;
             CustomerSupportTickets = customerSupportTicketRepository;
             Categories = categoryRepository;
+            ListingImages = listingImageRepository;
         }
 
         public IUserRepository Users { get; }
@@ -66,6 +68,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public ISubscriptionRepository Subscriptions { get; }
         public ICustomerSupportTicketRepository CustomerSupportTickets { get; }
         public ICategoryRepository Categories { get; }
+        public IListingImageRepository ListingImages { get; }
 
         public async Task<int> CompleteAsync( )
         {

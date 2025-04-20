@@ -25,6 +25,7 @@ namespace Mzad_Palestine_Core.Interfaces.Common
         ISubscriptionRepository Subscriptions { get; }
         ICustomerSupportTicketRepository CustomerSupportTickets { get; }
         ICategoryRepository Categories { get; }
+        IListingImageRepository ListingImages { get; }
         Task<int> CompleteAsync( );
         
     }

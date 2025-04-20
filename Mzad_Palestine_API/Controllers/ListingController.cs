@@ -21,7 +21,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -36,8 +36,10 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
+                dto.UserId = userId;
+
                 var listing = await _listingService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById) , new { id = listing.ListingId } , listing);
+                return CreatedAtAction(nameof(GetById), new { id = listing.ListingId }, listing);
             }
             catch (Exception ex)
             {
