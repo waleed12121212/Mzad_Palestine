@@ -181,7 +181,7 @@ builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
 
 // AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));

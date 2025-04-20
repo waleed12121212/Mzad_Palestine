@@ -17,12 +17,12 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public virtual async Task<T> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
@@ -57,7 +57,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task DeleteAsync(T entity)
+        public virtual Task DeleteAsync(T entity)
         {
             throw new NotImplementedException();
         }

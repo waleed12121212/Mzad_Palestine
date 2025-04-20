@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("Auth")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -37,7 +37,7 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { error = "البريد الإلكتروني وكلمة المرور مطلوبان" });
                 }
 
-                var result = await _authService.LoginAsync(request.Email, request.Password);
+                var result = await _authService.LoginAsync(request.Email , request.Password);
                 if (result.StartsWith("حدث خطأ"))
                 {
                     return BadRequest(new { error = result });
@@ -52,11 +52,11 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout( )
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -87,7 +87,7 @@ namespace Mzad_Palestine_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = $"حدث خطأ أثناء تسجيل الخروج: {ex.Message}" });
+                return StatusCode(500 , new { error = $"حدث خطأ أثناء تسجيل الخروج: {ex.Message}" });
             }
         }
 

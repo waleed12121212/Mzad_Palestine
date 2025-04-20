@@ -8,7 +8,7 @@ using Mzad_Palestine_Core.DTOs.Category;
 
 namespace Mzad_Palestine_API.Controllers
 {
-    [Route("Category")]
+    [Route("[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -19,50 +19,49 @@ namespace Mzad_Palestine_API.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAll( )
+        [HttpGet]
+        [Route("get-all")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
         {
             try
             {
                 var categories = await _categoryService.GetAllAsync();
-                return Ok(categories);
+                return Ok(new { success = true, data = categories });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpGet("get/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet]
+        [Route("get/{id}")]
+        public async Task<ActionResult<CategoryDto>> GetById(int id)
         {
             try
             {
                 var category = await _categoryService.GetByIdAsync(id);
                 if (category == null)
-                    return NotFound(new { error = "التصنيف غير موجود" });
-                return Ok(category);
+                    return NotFound(new { success = false, error = "التصنيف غير موجود" });
+
+                return Ok(new { success = true, data = category });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
+        [HttpPost]
+        [Route("create")]
+        public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new { error = "البيانات غير صالحة", details = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
-                }
-
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -71,32 +70,49 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (userRole != "Admin")
                 {
-                    return Unauthorized(new { error = "غير مصرح لك بإنشاء تصنيف" });
+                    return Unauthorized(new { success = false, error = "غير مصرح لك بإنشاء تصنيف" });
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        error = "البيانات غير صالحة",
+                        details = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
                 }
 
                 if (string.IsNullOrWhiteSpace(dto.Name))
                 {
-                    return BadRequest(new { error = "اسم التصنيف مطلوب" });
+                    return BadRequest(new { success = false, error = "اسم التصنيف مطلوب" });
                 }
 
                 var category = await _categoryService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = category.Id },
+                    new { success = true, data = category }
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(int id , [FromBody] UpdateCategoryDto dto)
+        [HttpPut]
+        [Route("update/{id}")]
+        public async Task<ActionResult<CategoryDto>> Update(int id, [FromBody] UpdateCategoryDto dto)
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -105,31 +121,32 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (userRole != "Admin")
                 {
-                    return Unauthorized(new { error = "غير مصرح لك بتعديل التصنيف" });
+                    return Unauthorized(new { success = false, error = "غير مصرح لك بتعديل التصنيف" });
                 }
 
                 var category = await _categoryService.GetByIdAsync(id);
                 if (category == null)
-                    return NotFound(new { error = "التصنيف غير موجود" });
+                    return NotFound(new { success = false, error = "التصنيف غير موجود" });
 
-                var updatedCategory = await _categoryService.UpdateAsync(id , dto);
-                return Ok(updatedCategory);
+                var updatedCategory = await _categoryService.UpdateAsync(id, dto);
+                return Ok(new { success = true, data = updatedCategory });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete]
+        [Route("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -138,19 +155,53 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (userRole != "Admin")
                 {
-                    return Unauthorized(new { error = "غير مصرح لك بحذف التصنيف" });
+                    return Unauthorized(new { success = false, error = "غير مصرح لك بحذف التصنيف" });
                 }
 
                 var category = await _categoryService.GetByIdAsync(id);
                 if (category == null)
-                    return NotFound(new { error = "التصنيف غير موجود" });
+                    return NotFound(new { success = false, error = "التصنيف غير موجود" });
 
-                await _categoryService.DeleteAsync(id);
-                return Ok(new { message = "تم حذف التصنيف بنجاح" });
+                var result = await _categoryService.DeleteAsync(id);
+                if (result)
+                    return Ok(new { success = true, message = "تم حذف التصنيف بنجاح" });
+                else
+                    return BadRequest(new { success = false, error = "فشل في حذف التصنيف" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("active")]
+        [Route("actives")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetActiveCategories()
+        {
+            try
+            {
+                var categories = await _categoryService.GetActiveCategoriesAsync();
+                return Ok(new { success = true, data = categories });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("by-parent/{parentId}")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetByParentId(int parentId)
+        {
+            try
+            {
+                var categories = await _categoryService.GetByParentIdAsync(parentId);
+                return Ok(new { success = true, data = categories });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
     }
