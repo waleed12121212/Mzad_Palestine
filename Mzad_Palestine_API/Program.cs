@@ -180,6 +180,7 @@ builder.Services.AddScoped<ISubscriptionService , SubscriptionService>();
 builder.Services.AddScoped<ISupportService , SupportService>();
 builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
+builder.Services.AddScoped<ICarPricePredictionService, CarPricePredictionService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
