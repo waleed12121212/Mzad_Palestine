@@ -8,7 +8,7 @@ namespace Mzad_Palestine_API.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next , ILogger<ExceptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
             _logger = logger;
@@ -24,22 +24,23 @@ namespace Mzad_Palestine_API.Middleware
             catch (Exception ex)
             {
                 // تسجيل الاستثناء
-                _logger.LogError(ex , "Unhandled exception occurred.");
+                _logger.LogError(ex, "حدث خطأ غير متوقع.");
                 // التعامل مع الاستثناء وإرجاع استجابة موحدة
-                await HandleExceptionAsync(context , ex);
+                await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context , Exception exception)
+        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/json; charset=utf-8";
             // يمكن تغيير الكود حسب نوع الاستثناء إذا كان لديك استثناءات معرفة مسبقاً
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
 
             var errorResponse = new
             {
                 StatusCode = context.Response.StatusCode,
-                Message = "Internal Server Error. Please try again later.",
+                Message = "حدث خطأ في الخادم. الرجاء المحاولة مرة أخرى.",
                 // في البيئات الإنتاجية يُفضّل إخفاء التفاصيل الدقيقة لتجنب كشف معلومات حساسة
                 Detailed = exception.Message //يمكن الاستغناء عنها في البيئات الإنتاجية
             };

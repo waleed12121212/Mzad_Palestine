@@ -53,11 +53,29 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
         }
 
-        public async Task<IEnumerable<Auction>> GetByUserIdAsync(int userId)
+        public async Task<IEnumerable<AuctionResponseDto>> GetByUserIdAsync(int userId)
         {
             return await _context.Auctions
                 .Include(a => a.Listing)
-                .Where(a => a.Listing.UserId == userId)
+                    .ThenInclude(l => l.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
+                .Where(a => a.UserId == userId)
+                .Select(a => new AuctionResponseDto
+                {
+                    AuctionId = a.AuctionId,
+                    Name = a.Name,
+                    CategoryName = a.Listing.Category.Name,
+                    ReservePrice = a.ReservePrice,
+                    CurrentBid = a.CurrentBid,
+                    BidIncrement = a.BidIncrement,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    ImageUrl = a.ImageUrl,
+                    Status = a.Status,
+                    BidsCount = a.Bids.Count,
+                    WinnerName = a.Winner != null ? a.Winner.UserName : null
+                })
                 .ToListAsync();
         }
 
@@ -92,29 +110,102 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return auction?.Listing.UserId == userId;
         }
 
-        public async Task<IEnumerable<Auction>> SearchAsync(AuctionSearchDto searchDto)
+        public async Task<IEnumerable<AuctionResponseDto>> SearchAsync(AuctionSearchDto searchDto)
         {
             var query = _context.Auctions
                 .Include(a => a.Listing)
+                    .ThenInclude(l => l.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
                 .AsQueryable();
 
+            // البحث بالكلمة المفتاحية في اسم المزاد
+            if (!string.IsNullOrEmpty(searchDto.Keyword))
+            {
+                query = query.Where(a => a.Name.ToLower().Contains(searchDto.Keyword.ToLower()));
+            }
+
+            // البحث بالفئة
+            if (!string.IsNullOrEmpty(searchDto.Category))
+            {
+                query = query.Where(a => a.Listing.Category.Name.ToLower().Contains(searchDto.Category.ToLower()));
+            }
+
+            // البحث بالسعر
             if (searchDto.MinPrice.HasValue)
             {
-                query = query.Where(a => a.CurrentBid >= searchDto.MinPrice.Value);
+                query = query.Where(a => a.ReservePrice >= searchDto.MinPrice.Value || 
+                                      (a.CurrentBid > 0 && a.CurrentBid >= searchDto.MinPrice.Value));
             }
 
             if (searchDto.MaxPrice.HasValue)
             {
-                query = query.Where(a => a.CurrentBid <= searchDto.MaxPrice.Value);
+                query = query.Where(a => a.ReservePrice <= searchDto.MaxPrice.Value || 
+                                      (a.CurrentBid > 0 && a.CurrentBid <= searchDto.MaxPrice.Value));
             }
 
-            return await query.ToListAsync();
+            // البحث بالتاريخ
+            if (searchDto.StartDate.HasValue)
+            {
+                var startDate = searchDto.StartDate.Value.Date;
+                query = query.Where(a => a.StartTime.Date >= startDate);
+            }
+
+            if (searchDto.EndDate.HasValue)
+            {
+                var endDate = searchDto.EndDate.Value.Date.AddDays(1).AddSeconds(-1);
+                query = query.Where(a => a.EndTime <= endDate);
+            }
+
+            // البحث بحالة المزاد
+            if (searchDto.Status.HasValue)
+            {
+                query = query.Where(a => a.Status == searchDto.Status.Value);
+            }
+
+            // البحث بمعرف المستخدم
+            if (searchDto.UserId.HasValue)
+            {
+                query = query.Where(a => a.UserId == searchDto.UserId.Value);
+            }
+
+            return await query
+                .Select(a => new AuctionResponseDto
+                {
+                    AuctionId = a.AuctionId,
+                    Name = a.Name,
+                    CategoryName = a.Listing.Category.Name,
+                    ReservePrice = a.ReservePrice,
+                    CurrentBid = a.CurrentBid,
+                    BidIncrement = a.BidIncrement,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    ImageUrl = a.ImageUrl,
+                    Status = a.Status,
+                    BidsCount = a.Bids.Count,
+                    WinnerName = a.Winner != null ? a.Winner.UserName : null
+                })
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(Auction auction)
         {
             _context.Entry(auction).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public IQueryable<Auction> GetQueryable()
+        {
+            return _context.Auctions
+                .Include(a => a.Listing)
+                    .ThenInclude(l => l.Category)
+                .Include(a => a.User)
+                .Include(a => a.Winner)
+                .Include(a => a.Bids)
+                .Include(a => a.Payments)
+                .Include(a => a.AutoBids)
+                .Include(a => a.Disputes)
+                .AsQueryable();
         }
     }
 }

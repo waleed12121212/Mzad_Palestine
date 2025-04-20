@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.Interfaces.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
@@ -17,24 +19,28 @@ namespace Mzad_Palestine_Infrastructure.Services
         private readonly IBidRepository _bidRepository;
         private readonly IAutoBidRepository _autoBidRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuctionService(
             IAuctionRepository repository,
             IBidRepository bidRepository,
             IAutoBidRepository autoBidRepository,
-            INotificationRepository notificationRepository)
+            INotificationRepository notificationRepository,
+            IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _bidRepository = bidRepository;
             _autoBidRepository = autoBidRepository;
             _notificationRepository = notificationRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuctionDto> CreateAsync(CreateAuctionDto dto)
+        public async Task<AuctionResponseDto> CreateAsync(CreateAuctionDto dto)
         {
             var entity = new Auction
             {
                 ListingId = dto.ListingId,
+                Name = dto.Name,
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
                 ReservePrice = dto.ReservePrice,
@@ -45,19 +51,23 @@ namespace Mzad_Palestine_Infrastructure.Services
             };
 
             await _repository.AddAsync(entity);
+            await _unitOfWork.CompleteAsync();
 
-            return new AuctionDto
+            var createdAuction = await _repository.GetByIdAsync(entity.AuctionId);
+            return new AuctionResponseDto
             {
-                Id = entity.AuctionId,
-                ListingId = entity.ListingId,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime,
-                ReservePrice = entity.ReservePrice,
-                CurrentBid = entity.CurrentBid,
-                BidIncrement = entity.BidIncrement,
-                WinnerId = entity.WinnerId,
-                Status = entity.Status,
-                ImageUrl = entity.ImageUrl
+                AuctionId = createdAuction.AuctionId,
+                Name = createdAuction.Name,
+                CategoryName = createdAuction.Listing?.Category?.Name,
+                ReservePrice = createdAuction.ReservePrice,
+                CurrentBid = createdAuction.CurrentBid,
+                BidIncrement = createdAuction.BidIncrement,
+                StartTime = createdAuction.StartTime,
+                EndTime = createdAuction.EndTime,
+                ImageUrl = createdAuction.ImageUrl,
+                Status = createdAuction.Status,
+                BidsCount = createdAuction.Bids?.Count ?? 0,
+                WinnerName = createdAuction.Winner?.UserName
             };
         }
 
@@ -81,25 +91,34 @@ namespace Mzad_Palestine_Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<AuctionDto>> GetActiveAsync()
+        public async Task<IEnumerable<AuctionResponseDto>> GetActiveAsync()
         {
-            var entities = await _repository.GetActiveAsync();
-            return entities.Select(entity => new AuctionDto
+            try
             {
-                Id = entity.AuctionId,
-                ListingId = entity.ListingId,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime,
-                ReservePrice = entity.ReservePrice,
-                CurrentBid = entity.CurrentBid,
-                BidIncrement = entity.BidIncrement,
-                WinnerId = entity.WinnerId,
-                Status = entity.Status,
-                ImageUrl = entity.ImageUrl
-            });
+                var auctions = await _repository.GetActiveAsync();
+                return auctions.Select(auction => new AuctionResponseDto
+                {
+                    AuctionId = auction.AuctionId,
+                    Name = auction.Name,
+                    CategoryName = auction.Listing?.Category?.Name,
+                    ReservePrice = auction.ReservePrice,
+                    CurrentBid = auction.CurrentBid,
+                    BidIncrement = auction.BidIncrement,
+                    StartTime = auction.StartTime,
+                    EndTime = auction.EndTime,
+                    ImageUrl = auction.ImageUrl,
+                    Status = auction.Status,
+                    BidsCount = auction.Bids?.Count ?? 0,
+                    WinnerName = auction.Winner?.UserName
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء جلب المزادات النشطة: {ex.Message}");
+            }
         }
 
-        public async Task<AuctionDto?> UpdateAsync(int id, UpdateAuctionDto dto)
+        public async Task<AuctionResponseDto> UpdateAsync(int id, UpdateAuctionDto dto)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
@@ -116,19 +135,23 @@ namespace Mzad_Palestine_Infrastructure.Services
                 entity.ImageUrl = dto.ImageUrl;
 
             await _repository.UpdateAsync(entity);
+            await _unitOfWork.CompleteAsync();
 
-            return new AuctionDto
+            var updatedAuction = await _repository.GetByIdAsync(id);
+            return new AuctionResponseDto
             {
-                Id = entity.AuctionId,
-                ListingId = entity.ListingId,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime,
-                ReservePrice = entity.ReservePrice,
-                CurrentBid = entity.CurrentBid,
-                BidIncrement = entity.BidIncrement,
-                WinnerId = entity.WinnerId,
-                Status = entity.Status,
-                ImageUrl = entity.ImageUrl
+                AuctionId = updatedAuction.AuctionId,
+                Name = updatedAuction.Name,
+                CategoryName = updatedAuction.Listing?.Category?.Name,
+                ReservePrice = updatedAuction.ReservePrice,
+                CurrentBid = updatedAuction.CurrentBid,
+                BidIncrement = updatedAuction.BidIncrement,
+                StartTime = updatedAuction.StartTime,
+                EndTime = updatedAuction.EndTime,
+                ImageUrl = updatedAuction.ImageUrl,
+                Status = updatedAuction.Status,
+                BidsCount = updatedAuction.Bids?.Count ?? 0,
+                WinnerName = updatedAuction.Winner?.UserName
             };
         }
 
@@ -164,91 +187,210 @@ namespace Mzad_Palestine_Infrastructure.Services
             return await _repository.GetByIdAsync(auctionId);
         }
 
-        public async Task<IEnumerable<Auction>> GetUserAuctionsAsync(int userId)
+        public async Task<IEnumerable<AuctionResponseDto>> GetUserAuctionsAsync(int userId)
         {
-            var auctions = await _repository.GetAllAsync();
-            return auctions.Where(a => a.Listing.UserId == userId);
+            try
+            {
+                return await _repository.GetByUserIdAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء جلب مزادات المستخدم: {ex.Message}");
+            }
         }
 
-        public async Task<IEnumerable<Auction>> GetOpenAuctionsAsync()
+        public async Task<IEnumerable<AuctionResponseDto>> GetOpenAuctionsAsync()
         {
-            return await _repository.GetOpenAuctionsAsync();
+            try
+            {
+                var auctions = await _repository.GetOpenAuctionsAsync();
+                return auctions.Select(auction => new AuctionResponseDto
+                {
+                    AuctionId = auction.AuctionId,
+                    Name = auction.Name,
+                    CategoryName = auction.Listing?.Category?.Name,
+                    ReservePrice = auction.ReservePrice,
+                    CurrentBid = auction.CurrentBid,
+                    BidIncrement = auction.BidIncrement,
+                    StartTime = auction.StartTime,
+                    EndTime = auction.EndTime,
+                    ImageUrl = auction.ImageUrl,
+                    Status = auction.Status,
+                    BidsCount = auction.Bids?.Count ?? 0,
+                    WinnerName = auction.Winner?.UserName
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء جلب المزادات المفتوحة: {ex.Message}");
+            }
         }
 
-        public async Task<IEnumerable<Auction>> GetClosedAuctionsAsync()
+        public async Task<IEnumerable<AuctionResponseDto>> GetClosedAuctionsAsync()
         {
-            return await _repository.GetClosedAuctionsAsync();
+            try
+            {
+                var auctions = await _repository.GetClosedAuctionsAsync();
+                return auctions.Select(auction => new AuctionResponseDto
+                {
+                    AuctionId = auction.AuctionId,
+                    Name = auction.Name,
+                    CategoryName = auction.Listing?.Category?.Name,
+                    ReservePrice = auction.ReservePrice,
+                    CurrentBid = auction.CurrentBid,
+                    BidIncrement = auction.BidIncrement,
+                    StartTime = auction.StartTime,
+                    EndTime = auction.EndTime,
+                    ImageUrl = auction.ImageUrl,
+                    Status = auction.Status,
+                    BidsCount = auction.Bids?.Count ?? 0,
+                    WinnerName = auction.Winner?.UserName
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء جلب المزادات المغلقة: {ex.Message}");
+            }
         }
 
-        public async Task<IEnumerable<Auction>> SearchAuctionsAsync(AuctionSearchDto searchDto)
+        public async Task<IEnumerable<AuctionResponseDto>> SearchAuctionsAsync(AuctionSearchDto searchDto)
         {
-            return await _repository.SearchAsync(searchDto);
+            try
+            {
+                return await _repository.SearchAsync(searchDto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء البحث عن المزادات: {ex.Message}");
+            }
         }
 
         public async Task CreateAuctionAsync(Auction auction)
         {
-            auction.CreatedAt = DateTime.UtcNow;
-            auction.Status = AuctionStatus.Open;
-            await _repository.AddAsync(auction);
+            try
+            {
+                auction.CreatedAt = DateTime.UtcNow;
+                auction.Status = AuctionStatus.Open;
+                await _repository.AddAsync(auction);
+                var result = await _unitOfWork.CompleteAsync();
+                
+                if (result <= 0)
+                {
+                    throw new Exception("فشل في حفظ المزاد");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء إنشاء المزاد: {ex.Message}");
+            }
         }
 
         public async Task UpdateAuctionAsync(Auction auction, int userId)
         {
-            var existingAuction = await _repository.GetByIdAsync(auction.AuctionId);
-            if (existingAuction == null) return;
+            try
+            {
+                var existingAuction = await _repository.GetByIdAsync(auction.AuctionId);
+                if (existingAuction == null)
+                    throw new Exception("المزاد غير موجود");
 
-            if (existingAuction.Listing.UserId != userId) return;
+                if (existingAuction.UserId != userId)
+                    throw new Exception("غير مصرح لك بتحديث هذا المزاد");
 
-            existingAuction.StartTime = auction.StartTime;
-            existingAuction.EndTime = auction.EndTime;
-            existingAuction.ReservePrice = auction.ReservePrice;
-            existingAuction.BidIncrement = auction.BidIncrement;
-            existingAuction.ImageUrl = auction.ImageUrl;
+                existingAuction.StartTime = auction.StartTime;
+                existingAuction.EndTime = auction.EndTime;
+                existingAuction.ReservePrice = auction.ReservePrice;
+                existingAuction.BidIncrement = auction.BidIncrement;
+                existingAuction.ImageUrl = auction.ImageUrl;
+                existingAuction.UpdatedAt = DateTime.UtcNow;
 
-            await _repository.UpdateAsync(existingAuction);
+                _repository.Update(existingAuction);
+                var result = await _unitOfWork.CompleteAsync();
+                
+                if (result <= 0)
+                {
+                    throw new Exception("فشل في تحديث المزاد");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء تحديث المزاد: {ex.Message}");
+            }
         }
 
         public async Task CloseAuctionAsync(int auctionId, int userId)
         {
-            var auction = await _repository.GetByIdAsync(auctionId);
-            if (auction == null) return;
-
-            if (auction.Listing.UserId != userId) return;
-
-            auction.Status = AuctionStatus.Closed;
-            _repository.Update(auction);
-
-            // تحديد الفائز
-            var bids = await _bidRepository.GetBidsByAuctionAsync(auctionId);
-            var winningBid = await _bidRepository.GetHighestBidAsync(auctionId);
-            if (winningBid != null)
+            try
             {
-                winningBid.IsWinner = true;
-                _bidRepository.Update(winningBid);
+                var auction = await _repository.GetByIdAsync(auctionId);
+                if (auction == null)
+                    throw new Exception("المزاد غير موجود");
 
-                // إرسال إشعار للفائز
-                var notification = new Notification
+                if (auction.UserId != userId)
+                    throw new Exception("غير مصرح لك بإغلاق هذا المزاد");
+
+                auction.Status = AuctionStatus.Closed;
+                auction.UpdatedAt = DateTime.UtcNow;
+                _repository.Update(auction);
+
+                // تحديد الفائز
+                var winningBid = await _bidRepository.GetHighestBidAsync(auctionId);
+                if (winningBid != null)
                 {
-                    UserId = winningBid.UserId,
-                    RelatedId = auctionId,
-                    Message = "مبروك! لقد فزت بالمزاد",
-                    Type = NotificationType.General,
-                    Status = NotificationStatus.Unread,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    winningBid.IsWinner = true;
+                    _bidRepository.Update(winningBid);
 
-                await _notificationRepository.AddAsync(notification);
+                    auction.WinnerId = winningBid.UserId;
+                    auction.CurrentBid = winningBid.BidAmount;
+
+                    // إرسال إشعار للفائز
+                    var notification = new Notification
+                    {
+                        UserId = winningBid.UserId,
+                        RelatedId = auctionId,
+                        Message = "مبروك! لقد فزت بالمزاد",
+                        Type = NotificationType.General,
+                        Status = NotificationStatus.Unread,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _notificationRepository.AddAsync(notification);
+                }
+
+                var result = await _unitOfWork.CompleteAsync();
+                if (result <= 0)
+                {
+                    throw new Exception("فشل في إغلاق المزاد");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء إغلاق المزاد: {ex.Message}");
             }
         }
 
         public async Task DeleteAuctionAsync(int auctionId, int userId)
         {
-            var auction = await _repository.GetByIdAsync(auctionId);
-            if (auction == null) return;
+            try
+            {
+                var auction = await _repository.GetByIdAsync(auctionId);
+                if (auction == null)
+                    throw new Exception("المزاد غير موجود");
 
-            if (auction.Listing.UserId != userId) return;
+                if (auction.UserId != userId)
+                    throw new Exception("غير مصرح لك بحذف هذا المزاد");
 
-            await _repository.DeleteAsync(auction);
+                await _repository.DeleteAsync(auction);
+                var result = await _unitOfWork.CompleteAsync();
+                
+                if (result <= 0)
+                {
+                    throw new Exception("فشل في حذف المزاد");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء حذف المزاد: {ex.Message}");
+            }
         }
     }
 }

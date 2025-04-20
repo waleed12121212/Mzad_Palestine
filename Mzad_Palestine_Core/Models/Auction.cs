@@ -13,6 +13,7 @@ namespace Mzad_Palestine_Core.Models
     {
         public int AuctionId { get; set; }
         public int ListingId { get; set; }
+        public int UserId { get; set; }
         public string Name { get; set; }
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
         public DateTime EndTime { get; set; }
@@ -23,9 +24,11 @@ namespace Mzad_Palestine_Core.Models
         public AuctionStatus Status { get; set; }
         public string ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
 
         // الملاحة
         public Listing Listing { get; set; }
+        public User User { get; set; }
         public User Winner { get; set; }
         public ICollection<Bid> Bids { get; set; } = new HashSet<Bid>();
         public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();

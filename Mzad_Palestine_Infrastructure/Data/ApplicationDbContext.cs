@@ -107,22 +107,33 @@ namespace Mzad_Palestine_Infrastructure.Data
             {
                 entity.HasKey(a => a.AuctionId);
                 entity.Property(a => a.ReservePrice)
-                      .HasColumnType("decimal(10,2)");
+                      .HasColumnType("decimal(18,2)");
                 entity.Property(a => a.CurrentBid)
-                      .HasColumnType("decimal(10,2)");
+                      .HasColumnType("decimal(18,2)");
                 entity.Property(a => a.BidIncrement)
-                      .HasColumnType("decimal(10,2)");
-                // العلاقة مع Listing (علاقة واحد لواحد)
+                      .HasColumnType("decimal(18,2)");
+                entity.Property(a => a.CreatedAt)
+                      .HasDefaultValueSql("GETDATE()");
+                entity.Property(a => a.UpdatedAt)
+                      .HasDefaultValueSql("GETDATE()");
+
+                // العلاقة مع User
+                entity.HasOne(a => a.User)
+                      .WithMany()
+                      .HasForeignKey(a => a.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                // العلاقة مع Winner
+                entity.HasOne(a => a.Winner)
+                      .WithMany()
+                      .HasForeignKey(a => a.WinnerId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                // العلاقة مع Listing
                 entity.HasOne(a => a.Listing)
                       .WithOne(l => l.Auction)
                       .HasForeignKey<Auction>(a => a.ListingId)
                       .OnDelete(DeleteBehavior.NoAction);
-
-                // العلاقة مع Winner (User)
-                entity.HasOne(a => a.Winner)
-                      .WithMany()
-                      .HasForeignKey(a => a.WinnerId)
-                      .OnDelete(DeleteBehavior.SetNull);
             });
             #endregion
 
