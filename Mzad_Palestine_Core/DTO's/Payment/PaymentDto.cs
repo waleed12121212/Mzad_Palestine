@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mzad_Palestine_Core.Enums;
 
 namespace Mzad_Palestine_Core.DTO_s.Payment
 {
@@ -12,11 +13,11 @@ namespace Mzad_Palestine_Core.DTO_s.Payment
         public int UserId { get; set; }
         public int AuctionId { get; set; }
         public decimal Amount { get; set; }
-        public string Currency { get; set; }
         public string Method { get; set; }
-        public string EscrowStatus { get; set; }
         public string Status { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public string? TransactionId { get; set; }
+        public string? Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
-
 }

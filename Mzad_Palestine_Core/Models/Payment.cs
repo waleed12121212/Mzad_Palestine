@@ -13,14 +13,15 @@ namespace Mzad_Palestine_Core.Models
         public int UserId { get; set; }
         public int AuctionId { get; set; }
         public decimal Amount { get; set; }
-        public string Currency { get; set; } = "USD";
         public PaymentMethod Method { get; set; }
-        public PaymentEscrowStatus EscrowStatus { get; set; }
         public PaymentStatus Status { get; set; }
-        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+        public string? TransactionId { get; set; }
+        public string? Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        // الملاحة
-        public User User { get; set; }
-        public Auction Auction { get; set; }
+        // Navigation properties
+        public virtual User User { get; set; }
+        public virtual Auction Auction { get; set; }
     }
 }

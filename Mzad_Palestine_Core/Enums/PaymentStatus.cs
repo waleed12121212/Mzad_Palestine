@@ -8,8 +8,11 @@ namespace Mzad_Palestine_Core.Enums
 {
     public enum PaymentStatus
     {
+        Pending,
+        Verified,
         Completed,
         Failed,
-        Pending
+        Refunded,
+        Cancelled
     }
 }

@@ -36,8 +36,8 @@ namespace Mzad_Palestine_Core.Mapping
             // No need to ignore Id as it will be set by Identity framework
 
             // Listing mapping
-            CreateMap<Listing, ListingDto>();
-            CreateMap<CreateListingDto, Listing>();
+            CreateMap<Listing , ListingDto>();
+            CreateMap<CreateListingDto , Listing>();
 
             // Auction mapping
             CreateMap<Auction , AuctionDto>()

@@ -161,14 +161,24 @@ namespace Mzad_Palestine_Infrastructure.Data
             #region تكوين Payment
             modelBuilder.Entity<Payment>(entity =>
             {
+                entity.ToTable("Payments");
                 entity.HasKey(p => p.PaymentId);
                 entity.Property(p => p.Amount)
                       .HasColumnType("decimal(10,2)");
-                entity.Property(p => p.Currency)
-                      .HasMaxLength(10)
-                      .HasDefaultValue("USD");
-                entity.Property(p => p.TransactionDate)
+                entity.Property(p => p.Method)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(p => p.Status)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(p => p.TransactionId)
+                      .HasMaxLength(100);
+                entity.Property(p => p.Notes)
+                      .HasMaxLength(500);
+                entity.Property(p => p.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
+                entity.Property(p => p.UpdatedAt);
+
                 // العلاقة مع User
                 entity.HasOne(p => p.User)
                       .WithMany(u => u.Payments)

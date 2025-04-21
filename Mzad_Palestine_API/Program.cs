@@ -2,7 +2,7 @@
 using MediatR;
 using AutoMapper;
 using Mzad_Palestine_Core.Interfaces.Common;
-using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
@@ -18,9 +18,9 @@ using Mzad_Palestine_API.Middleware;
 using Mzad_Palestine_Core.Validation;
 using Microsoft.ML;
 using System.IdentityModel.Tokens.Jwt;
-using Mzad_Palestine_Core.Interfaces.Repositories;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Mzad_Palestine_Core.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
+builder.Services.AddIdentity<User , IdentityRole<int>>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -39,7 +39,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
     options.User.RequireUniqueEmail = true;
-    
+
     // Add case-insensitive username/email normalization
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = true;
@@ -48,7 +48,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddDefaultTokenProviders();
 
 // تسجيل RoleManager بشكل صحيح
-builder.Services.AddScoped<IRoleStore<IdentityRole<int>>, RoleStore<IdentityRole<int>, ApplicationDbContext, int>>();
+builder.Services.AddScoped<IRoleStore<IdentityRole<int>> , RoleStore<IdentityRole<int> , ApplicationDbContext , int>>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -157,7 +157,7 @@ builder.Services.AddScoped<ISubscriptionRepository , SubscriptionRepository>();
 builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTicketRepository>();
 builder.Services.AddScoped<ISupportRepository , SupportRepository>();
 builder.Services.AddScoped<IAuthRepository , AuthRepository>();
-builder.Services.AddScoped<IListingImageRepository, ListingImageRepository>();
+builder.Services.AddScoped<IListingImageRepository , ListingImageRepository>();
 
 // Register UnitOfWork
 builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();
@@ -184,8 +184,8 @@ builder.Services.AddScoped<ISubscriptionService , SubscriptionService>();
 builder.Services.AddScoped<ISupportService , SupportService>();
 builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
-builder.Services.AddScoped<ICarPricePredictionService, CarPricePredictionService>();
-builder.Services.AddScoped<IAutoBidProcessingService, AutoBidProcessingService>();
+builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();
+builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
