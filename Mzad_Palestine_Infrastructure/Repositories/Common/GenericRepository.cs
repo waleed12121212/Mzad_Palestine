@@ -21,6 +21,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public virtual async Task AddAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -41,6 +42,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public virtual void Update(T entity)
         {
             _context.Set<T>().Update(entity);
+            _context.SaveChanges();
         }
 
         public virtual async Task<bool> ExistsAsync(int id)
@@ -51,6 +53,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public virtual async Task DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
+            await _context.SaveChangesAsync();
         }
     }
 } 

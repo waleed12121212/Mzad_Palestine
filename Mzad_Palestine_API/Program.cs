@@ -157,6 +157,7 @@ builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTic
 builder.Services.AddScoped<ISupportRepository , SupportRepository>();
 builder.Services.AddScoped<IAuthRepository , AuthRepository>();
 builder.Services.AddScoped<IListingImageRepository , ListingImageRepository>();
+builder.Services.AddScoped<ITransactionRepository , TransactionRepository>();
 
 // Register UnitOfWork
 builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();
@@ -185,6 +186,7 @@ builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
 builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();
 builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>();
+builder.Services.AddScoped<ITransactionService , TransactionService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

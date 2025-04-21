@@ -20,5 +20,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             return await _context.CustomerSupportTickets.Where(t => t.Status == TicketStatus.Open).ToListAsync();
         }
+
+        public override void Update(CustomerSupportTicket entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<CustomerSupportTicket> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Support tickets cannot be searched by name. Please use ticket ID or user ID to search.");
+        }
     }
 }

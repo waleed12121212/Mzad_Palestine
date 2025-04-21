@@ -27,7 +27,8 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             ISubscriptionRepository subscriptionRepository,
             ICustomerSupportTicketRepository customerSupportTicketRepository,
             ICategoryRepository categoryRepository,
-            IListingImageRepository listingImageRepository)
+            IListingImageRepository listingImageRepository,
+            ITransactionRepository transactionRepository)
         {
             _context = context;
             Users = userRepository;
@@ -47,6 +48,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             CustomerSupportTickets = customerSupportTicketRepository;
             Categories = categoryRepository;
             ListingImages = listingImageRepository;
+            Transactions = transactionRepository;
         }
 
         public IUserRepository Users { get; }
@@ -66,6 +68,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public ICustomerSupportTicketRepository CustomerSupportTickets { get; }
         public ICategoryRepository Categories { get; }
         public IListingImageRepository ListingImages { get; }
+        public ITransactionRepository Transactions { get; }
 
         public async Task<int> CompleteAsync()
         {

@@ -29,5 +29,16 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             return await _context.Users.Where(u => u.Role.ToString().ToLower() == role.ToLower()).ToListAsync();
         }
+
+        public override void Update(User entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<User> GetByNameAsync(string name)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == name.ToLower());
+        }
     }
 }

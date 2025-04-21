@@ -4,6 +4,10 @@ using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Mzad_Palestine_Infrastructure.Repositories
 {
@@ -23,19 +27,24 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             await base.AddAsync(entity);
         }
 
-        public async Task<IEnumerable<CustomerSupportTicket>> FindAsync(Expression<Func<CustomerSupportTicket , bool>> criteria)
+        public async Task<IEnumerable<CustomerSupportTicket>> FindAsync(Expression<Func<CustomerSupportTicket, bool>> criteria)
         {
             return await base.FindAsync(criteria);
         }
 
-        public void Remove(CustomerSupportTicket entity)
+        public async Task DeleteAsync(CustomerSupportTicket entity)
         {
-            base.Remove(entity);
+            await base.DeleteAsync(entity);
         }
 
         public void Update(CustomerSupportTicket entity)
         {
             base.Update(entity);
+        }
+
+        public async Task<CustomerSupportTicket> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Customer support tickets cannot be searched by name.");
         }
     }
 }

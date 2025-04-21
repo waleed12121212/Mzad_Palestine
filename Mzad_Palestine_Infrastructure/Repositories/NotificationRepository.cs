@@ -22,5 +22,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
                 .ToListAsync();
         }
+
+        public override void Update(Notification entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Notification> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Notifications cannot be searched by name. Please use notification ID or user ID to search.");
+        }
     }
 }

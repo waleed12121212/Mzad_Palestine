@@ -16,5 +16,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Where(li => li.ListingId == listingId)
                 .ToListAsync();
         }
+
+        public override void Update(ListingImage entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<ListingImage> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Listing images cannot be searched by name. Please use image ID or listing ID to search.");
+        }
     }
 } 

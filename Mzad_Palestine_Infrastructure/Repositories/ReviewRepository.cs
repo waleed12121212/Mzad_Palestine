@@ -21,5 +21,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Where(r => r.ReviewedUserId == userId)
                 .ToListAsync();
         }
+
+        public override void Update(Review entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Review> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Reviews cannot be searched by name. Please use review ID, user ID, or listing ID to search.");
+        }
     }
 }

@@ -68,5 +68,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public override void Update(Payment entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Payment> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Payments cannot be searched by name. Please use payment ID, user ID, or transaction ID to search.");
+        }
     }
 }

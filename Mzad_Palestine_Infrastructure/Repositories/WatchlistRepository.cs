@@ -19,5 +19,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             return await _context.Watchlists.Where(w => w.UserId == userId).ToListAsync();
         }
+
+        public override void Update(Watchlist entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Watchlist> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Watchlists cannot be searched by name. Please use watchlist ID or user ID to search.");
+        }
     }
 }

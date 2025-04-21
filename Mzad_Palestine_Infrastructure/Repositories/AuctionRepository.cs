@@ -207,5 +207,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Include(a => a.Disputes)
                 .AsQueryable();
         }
+
+        public override void Update(Auction entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Auction> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Auctions cannot be searched by name. Please use other search criteria such as ID or associated listing.");
+        }
     }
 }

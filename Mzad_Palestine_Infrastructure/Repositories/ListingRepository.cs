@@ -51,5 +51,18 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             _context.Listings.Update(entity);
             await _context.SaveChangesAsync();
         }
+
+        public override void Update(Listing entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Listing> GetByNameAsync(string name)
+        {
+            return await _context.Listings
+                .Include(l => l.Category)
+                .Include(l => l.User)
+                .FirstOrDefaultAsync(l => l.Title.ToLower().Contains(name.ToLower()));
+        }
     }
 }

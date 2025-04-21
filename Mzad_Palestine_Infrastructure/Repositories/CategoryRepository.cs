@@ -49,5 +49,17 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             _dbContext.Categories.Remove(entity);
         }
+
+        public override void Update(Category entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Category> GetByNameAsync(string name)
+        {
+            return await _dbContext.Categories
+                .Include(c => c.ParentCategory)
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower());
+        }
     }
 } 

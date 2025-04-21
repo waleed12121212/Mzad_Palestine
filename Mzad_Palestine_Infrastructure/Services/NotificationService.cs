@@ -8,41 +8,77 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.Interfaces.Common;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly INotificationRepository _repository;
-        public NotificationService(INotificationRepository repository) => _repository = repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public async Task<NotificationDto> CreateAsync(NotificationDto dto)
+        public NotificationService(IUnitOfWork unitOfWork)
         {
-            var entity = new Notification
-            {
-                UserId = dto.UserId ,
-                RelatedId = dto.RelatedId ,
-                Message = dto.Message ,
-                Type = Enum.Parse<NotificationType>(dto.Type) ,
-                Status = Enum.Parse<NotificationStatus>(dto.Status)
-            };
-
-            await _repository.AddAsync(entity);
-
-            return new NotificationDto
-            {
-                Id = entity.UserId ,
-                UserId = entity.UserId ,
-                RelatedId = entity.RelatedId ,
-                Message = entity.Message ,
-                Type = entity.Type.ToString() ,
-                Status = entity.Status.ToString()
-            };
+            _unitOfWork = unitOfWork;
         }
 
-        public Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(int userId)
+        public async Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(int userId)
         {
-            throw new NotImplementedException();
+            var notifications = await _unitOfWork.Notifications.FindAsync(n => n.UserId == userId);
+            return notifications.Select(n => new NotificationDto
+            {
+                Id = n.NotificationId,
+                UserId = n.UserId,
+                RelatedId = n.RelatedId,
+                Message = n.Message,
+                Type = n.Type.ToString(),
+                Status = n.Status.ToString()
+            });
+        }
+
+        public async Task<bool> MarkAsReadAsync(int notificationId, int userId)
+        {
+            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
+            if (notification == null || notification.UserId != userId)
+                return false;
+
+            notification.Status = NotificationStatus.Read;
+            _unitOfWork.Notifications.Update(notification);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<bool> MarkAllAsReadAsync(int userId)
+        {
+            var notifications = await _unitOfWork.Notifications.FindAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread);
+            foreach (var notification in notifications)
+            {
+                notification.Status = NotificationStatus.Read;
+                _unitOfWork.Notifications.Update(notification);
+            }
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int notificationId, int userId)
+        {
+            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
+            if (notification == null || notification.UserId != userId)
+                return false;
+
+            await _unitOfWork.Notifications.DeleteAsync(notification);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<bool> ClearAllAsync(int userId)
+        {
+            var notifications = await _unitOfWork.Notifications.FindAsync(n => n.UserId == userId);
+            foreach (var notification in notifications)
+            {
+                await _unitOfWork.Notifications.DeleteAsync(notification);
+            }
+            await _unitOfWork.CompleteAsync();
+            return true;
         }
     }
 }

@@ -66,7 +66,16 @@ namespace Mzad_Palestine_Infrastructure.Services
             if (!string.IsNullOrEmpty(dto.Method))
                 payment.Method = Enum.Parse<PaymentMethod>(dto.Method);
             if (!string.IsNullOrEmpty(dto.TransactionId))
-                payment.TransactionId = dto.TransactionId;
+            {
+                if (int.TryParse(dto.TransactionId, out int transactionId))
+                {
+                    payment.TransactionId = transactionId;
+                }
+                else
+                {
+                    throw new InvalidOperationException("رقم المعاملة غير صالح");
+                }
+            }
             if (!string.IsNullOrEmpty(dto.Notes))
                 payment.Notes = dto.Notes;
             if (dto.Status.HasValue)

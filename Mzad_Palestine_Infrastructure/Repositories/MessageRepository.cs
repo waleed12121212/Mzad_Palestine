@@ -30,5 +30,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .OrderBy(m => m.Timestamp)
                 .ToListAsync();
         }
+
+        public override void Update(Message entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<Message> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Messages cannot be searched by name. Please use message ID, sender ID, or recipient ID to search.");
+        }
     }
 }

@@ -1,28 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Mzad_Palestine_Core.DTO_s.Customer_Support;
+using Mzad_Palestine_Core.DTO_s.Transaction;
 using Mzad_Palestine_Core.Interfaces.Services;
+using Mzad_Palestine_Core.Models;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Mzad_Palestine_Core.Enums;
 
 namespace Mzad_Palestine_API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class SupportController : ControllerBase
+    public class TransactionController : ControllerBase
     {
-        private readonly ISupportService _supportService;
-        private readonly ICustomerSupportTicketService _ticketService;
+        private readonly ITransactionService _transactionService;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public SupportController(ISupportService supportService, ICustomerSupportTicketService ticketService)
+        public TransactionController(ITransactionService transactionService)
         {
-            _supportService = supportService;
-            _ticketService = ticketService;
+            _transactionService = transactionService;
             _jsonOptions = new JsonSerializerOptions
             {
                 ReferenceHandler = ReferenceHandler.Preserve,
@@ -31,7 +28,7 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateSupportTicketDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateTransactionDto dto)
         {
             try
             {
@@ -55,53 +52,18 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.Subject))
+                var transaction = new Transaction
                 {
-                    return BadRequest(new { success = false, error = "عنوان التذكرة مطلوب" });
-                }
+                    UserId = parsedUserId,
+                    Amount = dto.Amount,
+                    TransactionType = dto.TransactionType,
+                    Description = dto.Description,
+                    Status = "Pending",
+                    TransactionDate = DateTime.UtcNow
+                };
 
-                if (string.IsNullOrWhiteSpace(dto.Description))
-                {
-                    return BadRequest(new { success = false, error = "وصف المشكلة مطلوب" });
-                }
-
-                dto.UserId = parsedUserId;
-                var ticket = await _supportService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetUserTickets), null, new { success = true, data = ticket });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, error = ex.Message });
-            }
-        }
-
-        [HttpGet("user")]
-        public async Task<IActionResult> GetUserTickets()
-        {
-            try
-            {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (string.IsNullOrEmpty(token))
-                {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
-                }
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadJwtToken(token);
-                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
-                }
-
-                if (!int.TryParse(userId, out int parsedUserId))
-                {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
-                }
-
-                var tickets = await _supportService.GetUserTicketsAsync(parsedUserId);
-                return Ok(new { success = true, data = tickets });
+                var result = await _transactionService.AddAsync(transaction);
+                return CreatedAtAction(nameof(GetById), new { id = result.TransactionId }, new { success = true, data = result });
             }
             catch (Exception ex)
             {
@@ -120,11 +82,11 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
-                var ticket = await _ticketService.GetByIdAsync(id);
-                if (ticket == null)
-                    return NotFound(new { success = false, error = "التذكرة غير موجودة" });
+                var transaction = await _transactionService.GetByIdAsync(id);
+                if (transaction == null)
+                    return NotFound(new { success = false, error = "المعاملة غير موجودة" });
 
-                return Ok(new { success = true, data = ticket });
+                return Ok(new { success = true, data = transaction });
             }
             catch (Exception ex)
             {
@@ -132,28 +94,8 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetByStatus(string status)
-        {
-            try
-            {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (string.IsNullOrEmpty(token))
-                {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
-                }
-
-                var tickets = await _ticketService.GetByStatusAsync(status);
-                return Ok(new { success = true, data = tickets });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, error = ex.Message });
-            }
-        }
-
-        [HttpPut("{id:int}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserTransactions()
         {
             try
             {
@@ -177,11 +119,8 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
                 }
 
-                var success = await _ticketService.ChangeStatusAsync(id, status);
-                if (!success)
-                    return NotFound(new { success = false, error = "التذكرة غير موجودة" });
-
-                return Ok(new { success = true, message = "تم تحديث حالة التذكرة بنجاح" });
+                var transactions = await _transactionService.GetByUserIdAsync(parsedUserId);
+                return Ok(new { success = true, data = transactions });
             }
             catch (Exception ex)
             {
@@ -189,8 +128,8 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpPost("{id:int}/response")]
-        public async Task<IActionResult> AddResponse(int id, [FromBody] string response)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTransactionDto dto)
         {
             try
             {
@@ -209,21 +148,23 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
-                if (!int.TryParse(userId, out int parsedUserId))
+                var existingTransaction = await _transactionService.GetByIdAsync(id);
+                if (existingTransaction == null)
+                    return NotFound(new { success = false, error = "المعاملة غير موجودة" });
+
+                var updatedTransaction = new Transaction
                 {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
-                }
+                    TransactionId = id,
+                    UserId = existingTransaction.UserId,
+                    Amount = dto.Amount ?? existingTransaction.Amount,
+                    TransactionType = dto.TransactionType ?? existingTransaction.TransactionType,
+                    Description = dto.Description ?? existingTransaction.Description,
+                    Status = dto.Status ?? existingTransaction.Status,
+                    TransactionDate = existingTransaction.TransactionDate
+                };
 
-                if (string.IsNullOrWhiteSpace(response))
-                {
-                    return BadRequest(new { success = false, error = "الرد مطلوب" });
-                }
-
-                var success = await _ticketService.AddResponseAsync(id, response, parsedUserId);
-                if (!success)
-                    return NotFound(new { success = false, error = "التذكرة غير موجودة" });
-
-                return Ok(new { success = true, message = "تم إضافة الرد بنجاح" });
+                var result = await _transactionService.UpdateAsync(updatedTransaction);
+                return Ok(new { success = true, data = result });
             }
             catch (Exception ex)
             {
@@ -242,11 +183,77 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
-                var success = await _ticketService.DeleteAsync(id);
+                var success = await _transactionService.DeleteAsync(id);
                 if (!success)
-                    return NotFound(new { success = false, error = "التذكرة غير موجودة" });
+                    return NotFound(new { success = false, error = "المعاملة غير موجودة" });
 
-                return Ok(new { success = true, message = "تم حذف التذكرة بنجاح" });
+                return Ok(new { success = true, message = "تم حذف المعاملة بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet("date-range")]
+        public async Task<IActionResult> GetByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var transactions = await _transactionService.GetByDateRangeAsync(startDate, endDate);
+                return Ok(new { success = true, data = transactions });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id:int}/process")]
+        public async Task<IActionResult> ProcessPayment(int id)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var success = await _transactionService.ProcessPaymentAsync(id);
+                if (!success)
+                    return NotFound(new { success = false, error = "المعاملة غير موجودة أو لا يمكن معالجتها" });
+
+                return Ok(new { success = true, message = "تمت معالجة المعاملة بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id:int}/refund")]
+        public async Task<IActionResult> RefundTransaction(int id)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var success = await _transactionService.RefundTransactionAsync(id);
+                if (!success)
+                    return NotFound(new { success = false, error = "المعاملة غير موجودة أو لا يمكن استردادها" });
+
+                return Ok(new { success = true, message = "تم استرداد المعاملة بنجاح" });
             }
             catch (Exception ex)
             {
@@ -254,4 +261,4 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
     }
-}
+} 

@@ -19,5 +19,15 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             return await _context.AutoBids.FirstOrDefaultAsync(ab => ab.UserId == userId && ab.AuctionId == auctionId);
         }
+
+        public override void Update(AutoBid entity)
+        {
+            base.Update(entity);
+        }
+
+        public async Task<AutoBid> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("Auto bids cannot be searched by name. Please use auction ID or user ID to search.");
+        }
     }
 }
