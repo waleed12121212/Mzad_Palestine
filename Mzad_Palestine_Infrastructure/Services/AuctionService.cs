@@ -71,24 +71,9 @@ namespace Mzad_Palestine_Infrastructure.Services
             };
         }
 
-        public async Task<AuctionDto?> GetByIdAsync(int id)
+        public async Task<Auction> GetByIdAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return null;
-
-            return new AuctionDto
-            {
-                Id = entity.AuctionId,
-                ListingId = entity.ListingId,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime,
-                ReservePrice = entity.ReservePrice,
-                CurrentBid = entity.CurrentBid,
-                BidIncrement = entity.BidIncrement,
-                WinnerId = entity.WinnerId,
-                Status = entity.Status,
-                ImageUrl = entity.ImageUrl
-            };
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<AuctionResponseDto>> GetActiveAsync()

@@ -5,7 +5,7 @@ using Mzad_Palestine_Core.Interfaces.Services;
 namespace Mzad_Palestine_API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class CarPredictionController : ControllerBase
     {
         private readonly ICarPricePredictionService _predictionService;
@@ -29,4 +29,4 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
     }
-} 
+}
