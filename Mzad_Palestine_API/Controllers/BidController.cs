@@ -48,8 +48,27 @@ namespace Mzad_Palestine_API.Controllers
                     });
                 }
 
-                // Using a temporary hardcoded user ID (1) for testing
-                int parsedUserId = 1;
+                // Get token from request headers
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                // Extract user ID from token
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
 
                 // Get the auction
                 var auction = await _auctionService.GetAuctionDetailsAsync(dto.AuctionId);

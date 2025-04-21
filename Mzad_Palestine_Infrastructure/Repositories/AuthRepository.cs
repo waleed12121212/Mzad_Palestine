@@ -41,9 +41,26 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                    return "فشل تسجيل الدخول: البريد الإلكتروني وكلمة المرور مطلوبان";
+
+                // Normalize email to lowercase
+                email = email.Trim().ToLowerInvariant();
+                
+                // Try to find user by email first
                 var user = await _userManager.FindByEmailAsync(email);
+                
+                // If not found by email, try to find by username
                 if (user == null)
-                    return "فشل تسجيل الدخول: المستخدم غير موجود";
+                {
+                    // Try to find user by normalized username
+                    user = await _userManager.Users
+                        .FirstOrDefaultAsync(u => u.NormalizedEmail == _userManager.NormalizeName(email) ||
+                                               u.NormalizedUserName == _userManager.NormalizeName(email));
+                                       
+                    if (user == null)
+                        return "فشل تسجيل الدخول: المستخدم غير موجود";
+                }
 
                 var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
                 if (!result.Succeeded)
