@@ -185,6 +185,7 @@ builder.Services.AddScoped<ISupportService , SupportService>();
 builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
 builder.Services.AddScoped<ICarPricePredictionService, CarPricePredictionService>();
+builder.Services.AddScoped<IAutoBidProcessingService, AutoBidProcessingService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

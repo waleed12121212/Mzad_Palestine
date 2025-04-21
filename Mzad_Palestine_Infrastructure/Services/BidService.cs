@@ -15,10 +15,12 @@ namespace Mzad_Palestine_Infrastructure.Services
     public class BidService : IBidService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAutoBidProcessingService _autoBidProcessingService;
 
-        public BidService(IUnitOfWork unitOfWork)
+        public BidService(IUnitOfWork unitOfWork, IAutoBidProcessingService autoBidProcessingService)
         {
             _unitOfWork = unitOfWork;
+            _autoBidProcessingService = autoBidProcessingService;
         }
 
         public async Task<BidDto> CreateBidAsync(Bid bid)
@@ -72,6 +74,12 @@ namespace Mzad_Palestine_Infrastructure.Services
                 // Save changes
                 await _unitOfWork.CompleteAsync();
 
+                // Process auto bids after a successful bid
+                if (!bid.IsAutoBid)
+                {
+                    await _autoBidProcessingService.ProcessAutoBidsForAuctionAsync(bid.AuctionId, bid.BidAmount);
+                }
+
                 return new BidDto(
                     id: bid.BidId,
                     auctionId: bid.AuctionId,
@@ -91,46 +99,53 @@ namespace Mzad_Palestine_Infrastructure.Services
         public async Task<IEnumerable<BidDto>> GetAuctionBidsAsync(int auctionId)
         {
             var bids = await _unitOfWork.Bids.GetAuctionBidsAsync(auctionId);
-            var bidsList = bids.ToList();
-            var winningBid = await _unitOfWork.Bids.GetWinningBidAsync(auctionId);
+            var bidDtos = new List<BidDto>();
 
-            return bidsList.Select(bid => new BidDto(
-                id: bid.BidId ,
-                auctionId: bid.AuctionId ,
-                userId: bid.UserId.ToString() ,
-                userName: bid.User?.UserName ?? "مستخدم غير معروف" ,
-                bidAmount: bid.BidAmount ,
-                createdAt: bid.BidTime ,
-                isWinning: winningBid != null && bid.BidId == winningBid.BidId
-            ));
+            foreach (var bid in bids)
+            {
+                bidDtos.Add(new BidDto(
+                    id: bid.BidId,
+                    auctionId: bid.AuctionId,
+                    userId: bid.UserId.ToString(),
+                    userName: bid.User?.UserName ?? "Unknown",
+                    bidAmount: bid.BidAmount,
+                    createdAt: bid.BidTime,
+                    isWinning: bid.IsWinner
+                ));
+            }
+
+            return bidDtos;
         }
 
         public async Task<IEnumerable<BidDto>> GetUserBidsAsync(int userId)
         {
             var bids = await _unitOfWork.Bids.FindAsync(b => b.UserId == userId);
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
-            var userName = user?.UserName ?? "مستخدم غير معروف";
+            var bidDtos = new List<BidDto>();
 
-            return bids.Select(bid => new BidDto(
-                id: bid.BidId ,
-                auctionId: bid.AuctionId ,
-                userId: bid.UserId.ToString() ,
-                userName: userName ,
-                bidAmount: bid.BidAmount ,
-                createdAt: bid.BidTime ,
-                isWinning: false
-            ));
+            foreach (var bid in bids)
+            {
+                bidDtos.Add(new BidDto(
+                    id: bid.BidId,
+                    auctionId: bid.AuctionId,
+                    userId: bid.UserId.ToString(),
+                    userName: bid.User?.UserName ?? "Unknown",
+                    bidAmount: bid.BidAmount,
+                    createdAt: bid.BidTime,
+                    isWinning: bid.IsWinner
+                ));
+            }
+
+            return bidDtos;
         }
 
-        public async Task DeleteBidAsync(int bidId , int userId)
+        public async Task DeleteBidAsync(int bidId, int userId)
         {
             var bid = await _unitOfWork.Bids.GetByIdAsync(bidId);
-
             if (bid == null)
                 throw new InvalidOperationException("العرض غير موجود");
 
             if (bid.UserId != userId)
-                throw new UnauthorizedAccessException("غير مصرح لك بحذف هذا العرض");
+                throw new InvalidOperationException("لا يمكنك حذف عرض لمستخدم آخر");
 
             await _unitOfWork.Bids.DeleteAsync(bid);
             await _unitOfWork.CompleteAsync();

@@ -217,7 +217,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("WinnerId");
 
-                    b.ToTable("Auctions");
+                    b.ToTable("Auctions", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.AutoBid", b =>
@@ -249,7 +249,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AutoBids");
+                    b.ToTable("AutoBids", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Bid", b =>
@@ -294,7 +294,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bids");
+                    b.ToTable("Bids", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Category", b =>
@@ -334,7 +334,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.CustomerSupportTicket", b =>
@@ -368,7 +368,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CustomerSupportTickets");
+                    b.ToTable("CustomerSupportTickets", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Dispute", b =>
@@ -408,7 +408,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Disputes");
+                    b.ToTable("Disputes", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Invoice", b =>
@@ -445,7 +445,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Listing", b =>
@@ -505,7 +505,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Listings");
+                    b.ToTable("Listings", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.ListingImage", b =>
@@ -533,7 +533,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("ListingId");
 
-                    b.ToTable("ListingImage");
+                    b.ToTable("ListingImage", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.ListingTag", b =>
@@ -548,7 +548,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("ListingTags");
+                    b.ToTable("ListingTags", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Message", b =>
@@ -588,7 +588,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Notification", b =>
@@ -624,7 +624,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Payment", b =>
@@ -671,7 +671,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Report", b =>
@@ -711,7 +711,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("ResolvedBy");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Review", b =>
@@ -751,7 +751,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Subscription", b =>
@@ -786,7 +786,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Tag", b =>
@@ -808,7 +808,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasKey("TagId");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Transaction", b =>
@@ -846,7 +846,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.User", b =>
@@ -986,7 +986,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Watchlists");
+                    b.ToTable("Watchlists", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
