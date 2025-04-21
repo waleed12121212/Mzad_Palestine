@@ -1,7 +1,8 @@
 using Mzad_Palestine_Core.Models;
-using Mzad_Palestine_Core.Interfaces.Common;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Mzad_Palestine_Core.Interfaces.Repositories
+namespace Mzad_Palestine_Core.Interfaces
 {
     public interface ICategoryRepository : IGenericRepository<Category>
     {

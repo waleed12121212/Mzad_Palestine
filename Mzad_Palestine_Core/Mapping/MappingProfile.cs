@@ -8,12 +8,12 @@ using Mzad_Palestine_Core.DTO_s.Invoice;
 using Mzad_Palestine_Core.DTO_s.Message;
 using Mzad_Palestine_Core.DTO_s.Notification;
 using Mzad_Palestine_Core.DTO_s.Payment;
-using Mzad_Palestine_Core.DTO_s.Report;
 using Mzad_Palestine_Core.DTO_s.Review;
 using Mzad_Palestine_Core.DTO_s.Subscription;
 using Mzad_Palestine_Core.DTO_s.Tag;
 using Mzad_Palestine_Core.DTO_s.User;
 using Mzad_Palestine_Core.DTO_s.Watchlist;
+using Mzad_Palestine_Core.DTOs;
 using Mzad_Palestine_Core.DTOs.Listing;
 using Mzad_Palestine_Core.Models;
 using System;
@@ -70,7 +70,7 @@ namespace Mzad_Palestine_Core.Mapping
 
             // Report mapping
             CreateMap<Report , ReportDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.ReportId));
+                .ForMember(dest => dest.ReportId , opt => opt.MapFrom(src => src.ReportId));
             CreateMap<CreateReportDto , Report>();
 
             // Notification mapping

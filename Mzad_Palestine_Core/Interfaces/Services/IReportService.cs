@@ -1,15 +1,44 @@
-﻿using Mzad_Palestine_Core.DTO_s.Report;
-using System;
+﻿using Mzad_Palestine_Core.DTOs;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Mzad_Palestine_Core.Interfaces.Services
 {
     public interface IReportService
     {
-        Task<ReportDto> CreateAsync(CreateReportDto dto);
-        Task<IEnumerable<ReportDto>> GetAllAsync( );
+        /// <summary>
+        /// Gets all reports
+        /// </summary>
+        /// <returns>List of reports</returns>
+        Task<IEnumerable<ReportDto>> GetAllAsync();
+
+        /// <summary>
+        /// Gets a report by its ID
+        /// </summary>
+        /// <param name="id">Report ID</param>
+        /// <returns>Report if found, null otherwise</returns>
+        Task<ReportDto> GetByIdAsync(int id);
+
+        /// <summary>
+        /// Creates a new report
+        /// </summary>
+        /// <param name="createReportDto">Report creation data</param>
+        /// <returns>Created report</returns>
+        Task<ReportDto> CreateAsync(CreateReportDto createReportDto);
+
+        /// <summary>
+        /// Updates an existing report
+        /// </summary>
+        /// <param name="id">Report ID</param>
+        /// <param name="updateReportDto">Report update data</param>
+        /// <returns>Updated report</returns>
+        Task<ReportDto> UpdateAsync(int id, UpdateReportDto updateReportDto);
+
+        /// <summary>
+        /// Deletes a report
+        /// </summary>
+        /// <param name="id">Report ID</param>
+        /// <returns>True if deleted, false if not found</returns>
+        Task<bool> DeleteAsync(int id);
     }
 }

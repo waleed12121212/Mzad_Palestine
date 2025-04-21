@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Mzad_Palestine_Core.Interfaces.Repositories;
+using Mzad_Palestine_Core.Interfaces;
 
 namespace Mzad_Palestine_Core.Interfaces.Common
 {
@@ -26,7 +26,6 @@ namespace Mzad_Palestine_Core.Interfaces.Common
         ICustomerSupportTicketRepository CustomerSupportTickets { get; }
         ICategoryRepository Categories { get; }
         IListingImageRepository ListingImages { get; }
-        Task<int> CompleteAsync( );
-        
+        Task<int> CompleteAsync();
     }
 }

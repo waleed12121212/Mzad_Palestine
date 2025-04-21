@@ -12,16 +12,15 @@ namespace Mzad_Palestine_Core.Models
     public class Report
     {
         public int ReportId { get; set; }
+        public string Reason { get; set; }
+        public DateTime CreatedAt { get; set; }
         public int ReporterId { get; set; }
         public int ReportedListingId { get; set; }
-        public string Reason { get; set; }
-        public ReportStatus Status { get; set; }
         public int? ResolvedBy { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // الملاحة
-        public User Reporter { get; set; }
-        public Listing ReportedListing { get; set; }
-        public User Resolver { get; set; }
+        // Navigation Properties
+        public virtual User Reporter { get; set; }
+        public virtual Listing ReportedListing { get; set; }
+        public virtual User Resolver { get; set; }
     }
 }

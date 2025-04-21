@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mzad_Palestine_Core.Interfaces.Repositories;
+using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;
@@ -57,6 +57,16 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<Payment> GetPaymentByAuctionAsync(int auctionId)
         {
             return await _context.Payments.FirstOrDefaultAsync(p => p.AuctionId == auctionId);
+        }
+
+        public Task<bool> VerifyPaymentAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<Payment> IPaymentRepository.UpdateAsync(Payment payment)
+        {
+            throw new NotImplementedException();
         }
     }
 }

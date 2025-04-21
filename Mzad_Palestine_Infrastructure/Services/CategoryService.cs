@@ -4,7 +4,6 @@ using Mzad_Palestine_Core.DTOs.Category;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Core.Interfaces.Common;
-using Mzad_Palestine_Core.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

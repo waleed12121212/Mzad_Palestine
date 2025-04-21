@@ -2,7 +2,6 @@
 using MediatR;
 using AutoMapper;
 using Mzad_Palestine_Core.Interfaces.Common;
-using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using Mzad_Palestine_Infrastructure.Repositories.Common;

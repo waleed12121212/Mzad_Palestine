@@ -1,11 +1,6 @@
 ﻿using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_Core.Interfaces.Common;
-using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Mzad_Palestine_Infrastructure.Repositories.Common
@@ -13,23 +8,25 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-        public UnitOfWork(ApplicationDbContext context ,
-            IUserRepository userRepository ,
-            IListingRepository listingRepository ,
-            IAuctionRepository auctionRepository ,
-            IBidRepository bidRepository ,
-            IPaymentRepository paymentRepository ,
-            IMessageRepository messageRepository ,
-            IReviewRepository reviewRepository ,
-            IReportRepository reportRepository ,
-            INotificationRepository notificationRepository ,
-            IAutoBidRepository autoBidRepository ,
-            IDisputeRepository disputeRepository ,
-            ITagRepository tagRepository ,
-            IWatchlistRepository watchlistRepository ,
-            ISubscriptionRepository subscriptionRepository ,
-            ICustomerSupportTicketRepository customerSupportTicketRepository ,
-            ICategoryRepository categoryRepository ,
+
+        public UnitOfWork(
+            ApplicationDbContext context,
+            IUserRepository userRepository,
+            IListingRepository listingRepository,
+            IAuctionRepository auctionRepository,
+            IBidRepository bidRepository,
+            IPaymentRepository paymentRepository,
+            IMessageRepository messageRepository,
+            IReviewRepository reviewRepository,
+            IReportRepository reportRepository,
+            INotificationRepository notificationRepository,
+            IAutoBidRepository autoBidRepository,
+            IDisputeRepository disputeRepository,
+            ITagRepository tagRepository,
+            IWatchlistRepository watchlistRepository,
+            ISubscriptionRepository subscriptionRepository,
+            ICustomerSupportTicketRepository customerSupportTicketRepository,
+            ICategoryRepository categoryRepository,
             IListingImageRepository listingImageRepository)
         {
             _context = context;
@@ -70,7 +67,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public ICategoryRepository Categories { get; }
         public IListingImageRepository ListingImages { get; }
 
-        public async Task<int> CompleteAsync( )
+        public async Task<int> CompleteAsync()
         {
             return await _context.SaveChangesAsync();
         }

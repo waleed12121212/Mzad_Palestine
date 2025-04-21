@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Mzad_Palestine_Core.DTO_s.Payment;
-using Mzad_Palestine_Core.Interfaces.Repositories;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Core.Enums;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mzad_Palestine_Core.Interfaces;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
