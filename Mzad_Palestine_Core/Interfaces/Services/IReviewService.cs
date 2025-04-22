@@ -11,5 +11,10 @@ namespace Mzad_Palestine_Core.Interfaces.Services
     {
         Task<ReviewDto> CreateAsync(CreateReviewDto dto);
         Task<IEnumerable<ReviewDto>> GetByListingIdAsync(int listingId);
+        Task<IEnumerable<ReviewDto>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<ReviewDto>> GetByReviewerIdAsync(int reviewerId);
+        Task<double> GetAverageRatingForUserAsync(int userId);
+        Task<ReviewDto> EditAsync(int id, UpdateReviewDto dto);
+        Task<bool> DeleteAsync(int id);
     }
 }

@@ -126,9 +126,8 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
-                var reviews = await _reviewService.GetByListingIdAsync(userId);
-                var userReviews = reviews.Where(r => r.ReviewedUserId == userId);
-                return Ok(new { success = true, data = userReviews });
+                var reviews = await _reviewService.GetByUserIdAsync(userId);
+                return Ok(new { success = true, data = reviews });
             }
             catch (Exception ex)
             {
@@ -161,9 +160,8 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
                 }
 
-                var reviews = await _reviewService.GetByListingIdAsync(parsedUserId);
-                var myReviews = reviews.Where(r => r.ReviewerId == parsedUserId);
-                return Ok(new { success = true, data = myReviews });
+                var reviews = await _reviewService.GetByReviewerIdAsync(parsedUserId);
+                return Ok(new { success = true, data = reviews });
             }
             catch (Exception ex)
             {
@@ -196,9 +194,8 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
                 }
 
-                var reviews = await _reviewService.GetByListingIdAsync(parsedUserId);
-                var receivedReviews = reviews.Where(r => r.ReviewedUserId == parsedUserId);
-                return Ok(new { success = true, data = receivedReviews });
+                var reviews = await _reviewService.GetByUserIdAsync(parsedUserId);
+                return Ok(new { success = true, data = reviews });
             }
             catch (Exception ex)
             {
@@ -229,6 +226,89 @@ namespace Mzad_Palestine_API.Controllers
                 var totalReviews = userReviews.Count();
 
                 return Ok(new { success = true, data = new { averageRating, totalReviews } });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> EditReview(int id, [FromBody] UpdateReviewDto dto)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                if (dto.Rating < 1 || dto.Rating > 5)
+                {
+                    return BadRequest(new { success = false, error = "التقييم يجب أن يكون بين 1 و 5" });
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Comment))
+                {
+                    return BadRequest(new { success = false, error = "التعليق مطلوب" });
+                }
+
+                var review = await _reviewService.EditAsync(id, dto);
+                return Ok(new { success = true, data = review });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                var success = await _reviewService.DeleteAsync(id);
+                if (!success)
+                {
+                    return NotFound(new { success = false, error = "المراجعة غير موجودة" });
+                }
+
+                return Ok(new { success = true, message = "تم حذف المراجعة بنجاح" });
             }
             catch (Exception ex)
             {
