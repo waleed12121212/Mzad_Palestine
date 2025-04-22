@@ -1,14 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mzad_Palestine_Core.DTOs;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Mzad_Palestine_API.Controllers
 {
@@ -17,146 +13,10 @@ namespace Mzad_Palestine_API.Controllers
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
-        private readonly JsonSerializerOptions _jsonOptions;
-        private readonly IListingService _listingService;
-        private readonly ILogger<ReportController> _logger;
 
-        public ReportController(IReportService reportService, IListingService listingService, ILogger<ReportController> logger)
+        public ReportController(IReportService reportService)
         {
             _reportService = reportService;
-            _listingService = listingService;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                ReferenceHandler = ReferenceHandler.Preserve,
-                MaxDepth = 32
-            };
-            _logger = logger;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateReportDto dto)
-        {
-            try
-            {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (string.IsNullOrEmpty(token))
-                {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
-                }
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadJwtToken(token);
-                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
-                }
-
-                if (!int.TryParse(userId, out int parsedUserId))
-                {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
-                }
-
-                if (string.IsNullOrWhiteSpace(dto.Reason))
-                {
-                    return BadRequest(new { success = false, error = "سبب التقرير مطلوب" });
-                }
-
-                if (dto.ReportedListingId <= 0)
-                {
-                    return BadRequest(new { success = false, error = "معرف القائمة المبلغ عنها غير صالح" });
-                }
-
-                // Check if the listing exists
-                var listing = await _listingService.GetByIdAsync(dto.ReportedListingId);
-                if (listing == null)
-                {
-                    return BadRequest(new { success = false, error = "القائمة المبلغ عنها غير موجودة" });
-                }
-
-                // Check if user is reporting their own listing
-                if (listing.UserId == parsedUserId)
-                {
-                    return BadRequest(new { success = false, error = "لا يمكنك الإبلاغ عن القائمة الخاصة بك" });
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        error = "البيانات غير صالحة",
-                        details = ModelState.Values
-                            .SelectMany(v => v.Errors)
-                            .Select(e => e.ErrorMessage)
-                    });
-                }
-
-                // Check if user has already reported this listing
-                var existingReport = await _reportService.GetAllAsync();
-                var hasExistingReport = existingReport.Any(r => r.ReporterId == parsedUserId && r.ReportedListingId == dto.ReportedListingId);
-                if (hasExistingReport)
-                {
-                    return BadRequest(new { success = false, error = "لقد قمت بالإبلاغ عن هذه القائمة مسبقاً" });
-                }
-
-                dto.ReporterId = parsedUserId;
-                var createdReport = await _reportService.CreateAsync(new Report
-                {
-                    Reason = dto.Reason,
-                    ReporterId = parsedUserId,
-                    ReportedListingId = dto.ReportedListingId,
-                    CreatedAt = DateTime.UtcNow,
-                    Status = "Pending"
-                });
-
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = createdReport.ReportId },
-                    new { success = true, data = createdReport }
-                );
-            }
-            catch (ArgumentNullException ex)
-            {
-                _logger.LogWarning(ex, "Invalid data provided when creating report");
-                return BadRequest(new { success = false, error = "البيانات المقدمة غير صالحة" });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid argument when creating report");
-                return BadRequest(new { success = false, error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Validation error when creating report");
-                return BadRequest(new { success = false, error = ex.Message });
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, "Database error when creating report");
-                return StatusCode(500, new { success = false, error = "حدث خطأ في قاعدة البيانات. الرجاء المحاولة مرة أخرى." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error when creating report: {Message}", ex.Message);
-                
-                // Check for specific error messages and provide appropriate responses
-                if (ex.Message.Contains("User with ID") && ex.Message.Contains("does not exist"))
-                {
-                    return BadRequest(new { success = false, error = "المستخدم غير موجود" });
-                }
-                if (ex.Message.Contains("Listing with ID") && ex.Message.Contains("does not exist"))
-                {
-                    return BadRequest(new { success = false, error = "القائمة المبلغ عنها غير موجودة" });
-                }
-                if (ex.Message.Contains("Failed to save"))
-                {
-                    return StatusCode(500, new { success = false, error = "فشل حفظ التقرير. الرجاء المحاولة مرة أخرى." });
-                }
-                
-                return StatusCode(500, new { success = false, error = "حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى." });
-            }
         }
 
         [HttpGet]
@@ -167,16 +27,16 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-                if (string.IsNullOrEmpty(userId))
+                if (userRole != "Admin")
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
                 }
 
                 var reports = await _reportService.GetAllAsync();
@@ -188,7 +48,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -196,22 +56,29 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
                 var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
                 var report = await _reportService.GetByIdAsync(id);
                 if (report == null)
                 {
-                    return NotFound(new { success = false, error = "التقرير غير موجود" });
+                    return NotFound(new { error = "التقرير غير موجود" });
+                }
+
+                // Only allow admin or the reporter to view the report
+                if (userRole != "Admin" && report.ReporterId != int.Parse(userId))
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بعرض هذا التقرير" });
                 }
 
                 return Ok(new { success = true, data = report });
@@ -222,17 +89,19 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateReportDto dto)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateReportDto createReportDto)
         {
             try
             {
+                // 1. التحقق من JWT Token
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
+                // 2. استخراج معرف المستخدم
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
                 var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -242,25 +111,65 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
-                if (!int.TryParse(userId, out int parsedUserId))
+                // 3. التحقق من صحة البيانات
+                if (string.IsNullOrWhiteSpace(createReportDto.Reason))
                 {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                    return BadRequest(new { success = false, error = "يجب تحديد سبب البلاغ" });
                 }
 
-                var existingReport = await _reportService.GetByIdAsync(id);
-                if (existingReport == null)
+                if (createReportDto.ReportedListingId <= 0)
                 {
-                    return NotFound(new { success = false, error = "التقرير غير موجود" });
+                    return BadRequest(new { success = false, error = "يجب تحديد معرف الإعلان المبلغ عنه" });
                 }
 
-                if (existingReport.ReporterId != parsedUserId)
+                // 4. إنشاء كائن التقرير
+                var report = new Report
                 {
-                    return Unauthorized(new { success = false, error = "غير مصرح لك بتحديث هذا التقرير" });
+                    Reason = createReportDto.Reason,
+                    ReporterId = int.Parse(userId),
+                    ReportedListingId = createReportDto.ReportedListingId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // 5. إضافة التقرير وإرجاع النتيجة
+                var createdReport = await _reportService.CreateAsync(report);
+                return CreatedAtAction(
+                    nameof(GetById), 
+                    new { id = createdReport.ReportId }, 
+                    new { success = true, data = createdReport }
+                );
+            }
+            catch (Exception ex)
+            {
+                // تسجيل الخطأ في سجل الخوادم (لم يتم تنفيذه هنا)
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateReportDto updateReportDto)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.Reason))
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
                 {
-                    return BadRequest(new { success = false, error = "سبب التقرير مطلوب" });
+                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                }
+
+                if (userRole != "Admin")
+                {
+                    return Unauthorized(new { error = "غير مصرح لك بتحديث التقارير" });
                 }
 
                 if (!ModelState.IsValid)
@@ -275,7 +184,15 @@ namespace Mzad_Palestine_API.Controllers
                     });
                 }
 
-                var updatedReport = await _reportService.UpdateAsync(id, dto);
+                // Set resolver to current user (admin)
+                updateReportDto.ResolvedBy = int.Parse(userId);
+
+                var updatedReport = await _reportService.UpdateAsync(id, updateReportDto);
+                if (updatedReport == null)
+                {
+                    return NotFound(new { error = "التقرير غير موجود" });
+                }
+
                 return Ok(new { success = true, data = updatedReport });
             }
             catch (Exception ex)
@@ -284,7 +201,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -292,41 +209,25 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-                if (string.IsNullOrEmpty(userId))
+                if (userRole != "Admin")
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
-                }
-
-                if (!int.TryParse(userId, out int parsedUserId))
-                {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
-                }
-
-                var existingReport = await _reportService.GetByIdAsync(id);
-                if (existingReport == null)
-                {
-                    return NotFound(new { success = false, error = "التقرير غير موجود" });
-                }
-
-                if (existingReport.ReporterId != parsedUserId)
-                {
-                    return Unauthorized(new { success = false, error = "غير مصرح لك بحذف هذا التقرير" });
+                    return Unauthorized(new { error = "غير مصرح لك بحذف التقارير" });
                 }
 
                 var result = await _reportService.DeleteAsync(id);
-                if (!result)
+                if (result)
                 {
-                    return NotFound(new { success = false, error = "التقرير غير موجود" });
+                    return Ok(new { success = true, message = "تم حذف التقرير بنجاح" });
                 }
-
-                return Ok(new { success = true, message = "تم حذف التقرير بنجاح" });
+                
+                return NotFound(new { error = "التقرير غير موجود" });
             }
             catch (Exception ex)
             {

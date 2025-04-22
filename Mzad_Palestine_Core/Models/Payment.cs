@@ -11,7 +11,7 @@ namespace Mzad_Palestine_Core.Models
         public decimal Amount { get; set; }
         public PaymentMethod Method { get; set; }
         public PaymentStatus Status { get; set; }
-        public int? TransactionId { get; set; }
+        public string? TransactionId { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -19,6 +19,5 @@ namespace Mzad_Palestine_Core.Models
         // Navigation properties
         public virtual User User { get; set; }
         public virtual Auction Auction { get; set; }
-        public virtual Transaction Transaction { get; set; }
     }
 }

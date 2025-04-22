@@ -68,18 +68,29 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .IsRequired()
                       .HasMaxLength(255);
                 entity.Property(l => l.Description)
-                      .HasColumnType("text");
-                entity.Property(l => l.Price)
-                      .HasColumnType("decimal(10,2)");
+                      .HasMaxLength(2000);
                 entity.Property(l => l.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
                 entity.Property(l => l.UpdatedAt)
                       .HasDefaultValueSql("GETDATE()");
+                
+                // إضافة نوع للأعمدة العشرية
+                entity.Property(l => l.Price)
+                      .HasColumnType("decimal(18,2)");
+                entity.Property(l => l.StartingPrice)
+                      .HasColumnType("decimal(18,2)");
+                
                 // العلاقة مع User
                 entity.HasOne(l => l.User)
                       .WithMany(u => u.Listings)
                       .HasForeignKey(l => l.UserId)
-                      .OnDelete(DeleteBehavior.NoAction);
+                      .OnDelete(DeleteBehavior.Cascade);
+                
+                // العلاقة مع Category
+                entity.HasOne(l => l.Category)
+                      .WithMany(c => c.Listings)
+                      .HasForeignKey(l => l.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 
@@ -281,10 +292,9 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .IsRequired()
                       .HasMaxLength(500);
                 
-                entity.Property(r => r.Status)
+                entity.Property(r => r.StatusId)
                       .IsRequired()
-                      .HasMaxLength(50)
-                      .HasDefaultValue("Pending");
+                      .HasDefaultValue(0);  // 0 يمثل "قيد الانتظار"
                 
                 entity.Property(r => r.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
@@ -301,10 +311,11 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .HasForeignKey(r => r.ReportedListingId)
                       .OnDelete(DeleteBehavior.NoAction);
 
-                // العلاقة مع Resolver
+                // العلاقة مع Resolver - تحديد اسم المفتاح الأجنبي بوضوح
                 entity.HasOne(r => r.Resolver)
                       .WithMany()
                       .HasForeignKey(r => r.ResolvedBy)
+                      .IsRequired(false) // يجعل العلاقة اختيارية لأن ResolvedBy يمكن أن يكون null
                       .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion

@@ -44,50 +44,25 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         {
             try
             {
-                // Start a transaction
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-                try
-                {
-                    // Verify that related entities exist
-                    var reporterExists = await _context.Users.AnyAsync(u => u.Id == report.ReporterId);
-                    if (!reporterExists)
-                        throw new InvalidOperationException($"User with ID {report.ReporterId} does not exist");
-
-                    var listingExists = await _context.Listings.AnyAsync(l => l.ListingId == report.ReportedListingId);
-                    if (!listingExists)
-                        throw new InvalidOperationException($"Listing with ID {report.ReportedListingId} does not exist");
-
-                    // Set default values
-                    report.CreatedAt = DateTime.UtcNow;
-                    report.Status = "Pending";
-                    
-                    // Add the report
-                    await _reports.AddAsync(report);
-                    
-                    // Save changes
-                    var saveResult = await _context.SaveChangesAsync();
-                    if (saveResult <= 0)
-                        throw new Exception("Failed to save the report to the database");
-
-                    // Commit transaction
-                    await transaction.CommitAsync();
-
-                    // Reload the report with navigation properties
-                    return await _reports
-                        .Include(r => r.Reporter)
-                        .Include(r => r.ReportedListing)
-                        .FirstOrDefaultAsync(r => r.ReportId == report.ReportId);
-                }
-                catch (Exception ex)
-                {
-                    // Rollback transaction on error
-                    await transaction.RollbackAsync();
-                    throw new Exception($"Database operation failed: {ex.Message}", ex);
-                }
+                // تعيين القيم الافتراضية
+                report.CreatedAt = DateTime.UtcNow;
+                report.StatusId = 0; // حالة "قيد الانتظار"
+                
+                // إضافة التقرير
+                await _reports.AddAsync(report);
+                
+                // حفظ التغييرات
+                await _context.SaveChangesAsync();
+                
+                // إعادة تحميل التقرير مع العلاقات
+                return await _reports
+                    .Include(r => r.Reporter)
+                    .Include(r => r.ReportedListing)
+                    .FirstOrDefaultAsync(r => r.ReportId == report.ReportId);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error creating report: {ex.Message}", ex);
+                throw new Exception($"فشل في إنشاء التقرير: {ex.Message}", ex);
             }
         }
 
@@ -112,7 +87,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<IEnumerable<Report>> GetPendingReportsAsync()
         {
             return await _reports
-                .Where(r => r.Status == "Pending")
+                .Where(r => r.StatusId == 0)
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedListing)
                 .ToListAsync();

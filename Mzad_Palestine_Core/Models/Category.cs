@@ -23,6 +23,8 @@ namespace Mzad_Palestine_Core.Models
         public Category? ParentCategory { get; set; }
 
         public ICollection<Category> SubCategories { get; set; }
+        
+        public ICollection<Listing> Listings { get; set; }
 
         public bool IsActive { get; set; } = true;
 
@@ -32,6 +34,7 @@ namespace Mzad_Palestine_Core.Models
         public Category()
         {
             SubCategories = new HashSet<Category>();
+            Listings = new HashSet<Listing>();
             CreatedAt = DateTime.UtcNow;
             IsActive = true;
         }

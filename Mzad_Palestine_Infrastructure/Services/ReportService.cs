@@ -60,61 +60,43 @@ namespace Mzad_Palestine_Infrastructure.Services
             try
             {
                 if (report == null)
-                    throw new ArgumentNullException(nameof(report), "Report object cannot be null");
+                    throw new ArgumentNullException(nameof(report), "كائن التقرير لا يمكن أن يكون فارغًا");
 
                 if (string.IsNullOrWhiteSpace(report.Reason))
-                    throw new ArgumentException("Reason is required", nameof(report));
+                    throw new ArgumentException("سبب البلاغ مطلوب", nameof(report));
 
                 if (report.ReporterId <= 0)
-                    throw new ArgumentException("Invalid ReporterId", nameof(report));
+                    throw new ArgumentException("معرف المبلغ غير صالح", nameof(report));
 
                 if (report.ReportedListingId <= 0)
-                    throw new ArgumentException("Invalid ReportedListingId", nameof(report));
+                    throw new ArgumentException("معرف الإعلان المبلغ عنه غير صالح", nameof(report));
 
                 _logger.LogInformation(
-                    "Creating new report. ReporterId: {ReporterId}, ReportedListingId: {ListingId}, Reason: {Reason}",
+                    "إنشاء تقرير جديد. معرف المبلغ: {ReporterId}، معرف الإعلان: {ListingId}، السبب: {Reason}",
                     report.ReporterId,
                     report.ReportedListingId,
                     report.Reason);
 
+                report.StatusId = 0; // حالة "قيد الانتظار"
+                report.CreatedAt = DateTime.UtcNow;
+
                 var createdReport = await _reportRepository.CreateAsync(report);
+                
                 if (createdReport == null)
-                    throw new Exception("Failed to create report - repository returned null");
+                    throw new Exception("فشل إنشاء التقرير - أعاد المستودع قيمة فارغة");
 
                 var mappedReport = _mapper.Map<ReportDto>(createdReport);
-                if (mappedReport == null)
-                    throw new Exception("Failed to map created report to DTO");
-
+                
                 _logger.LogInformation(
-                    "Successfully created report with ID: {ReportId}",
+                    "تم إنشاء التقرير بنجاح بمعرف: {ReportId}",
                     mappedReport.ReportId);
 
                 return mappedReport;
             }
-            catch (ArgumentNullException ex)
-            {
-                _logger.LogError(ex, "Null argument provided when creating report");
-                throw;
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Invalid argument provided when creating report");
-                throw;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Validation error while creating report: {Message}", ex.Message);
-                throw;
-            }
-            catch (AutoMapper.AutoMapperMappingException ex)
-            {
-                _logger.LogError(ex, "Mapping error occurred while creating report");
-                throw new Exception("Error mapping report data", ex);
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error occurred while creating report: {Message}", ex.Message);
-                throw new Exception("An unexpected error occurred while creating the report", ex);
+                _logger.LogError(ex, "حدث خطأ غير متوقع أثناء إنشاء التقرير: {Message}", ex.Message);
+                throw new Exception("حدث خطأ غير متوقع أثناء إنشاء التقرير", ex);
             }
         }
 
@@ -130,7 +112,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 if (updateReportDto.ResolvedBy.HasValue)
                 {
                     existingReport.ResolvedBy = updateReportDto.ResolvedBy;
-                    existingReport.Status = "Resolved";
+                    existingReport.StatusId = 1; // "Resolved" status (1)
                 }
 
                 var updatedReport = await _reportRepository.UpdateAsync(existingReport);
