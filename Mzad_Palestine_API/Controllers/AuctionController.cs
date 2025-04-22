@@ -37,7 +37,7 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false , error = " الرجاء تسجيل الدخول " });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
