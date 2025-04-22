@@ -19,21 +19,22 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             var ticket = new CustomerSupportTicket
             {
-                UserId = dto.UserId , // Now both are int
-                Subject = dto.Subject ,
-                Description = dto.Description ,
-                CreatedAt = DateTime.UtcNow ,
-                Status = TicketStatus.Open // Using enum from Core.Enums
+                UserId = dto.UserId,
+                Subject = dto.Subject,
+                Description = dto.Description,
+                CreatedAt = DateTime.UtcNow,
+                Status = TicketStatus.Open
             };
 
             await _supportRepository.AddAsync(ticket);
+            await _supportRepository.SaveChangesAsync();
 
             return new SupportTicketDto
             {
-                Id = ticket.TicketId , // Using TicketId instead of Id
-                UserId = ticket.UserId ,
-                Subject = ticket.Subject ,
-                Description = ticket.Description ,
+                Id = ticket.TicketId,
+                UserId = ticket.UserId,
+                Subject = ticket.Subject,
+                Description = ticket.Description,
                 Status = ticket.Status
             };
         }
@@ -43,10 +44,10 @@ namespace Mzad_Palestine_Infrastructure.Services
             var tickets = await _supportRepository.GetUserTicketsAsync(userId);
             return tickets.Select(t => new SupportTicketDto
             {
-                Id = t.TicketId , // Using TicketId instead of Id
-                UserId = t.UserId ,
-                Subject = t.Subject ,
-                Description = t.Description ,
+                Id = t.TicketId,
+                UserId = t.UserId,
+                Subject = t.Subject,
+                Description = t.Description,
                 Status = t.Status
             });
         }

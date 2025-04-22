@@ -182,6 +182,7 @@ builder.Services.AddScoped<ITagService , TagService>();
 builder.Services.AddScoped<IWatchlistService , WatchlistService>();
 builder.Services.AddScoped<ISubscriptionService , SubscriptionService>();
 builder.Services.AddScoped<ISupportService , SupportService>();
+builder.Services.AddScoped<ICustomerSupportTicketService , CustomerSupportTicketService>();
 builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
 builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();

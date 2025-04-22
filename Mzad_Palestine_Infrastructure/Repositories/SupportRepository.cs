@@ -24,7 +24,8 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
         public async Task AddAsync(CustomerSupportTicket entity)
         {
-            await base.AddAsync(entity);
+            await _context.CustomerSupportTickets.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<CustomerSupportTicket>> FindAsync(Expression<Func<CustomerSupportTicket, bool>> criteria)

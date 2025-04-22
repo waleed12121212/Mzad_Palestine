@@ -153,7 +153,7 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPut("{id:int}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto dto)
         {
             try
             {
@@ -177,7 +177,12 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
                 }
 
-                var success = await _ticketService.ChangeStatusAsync(id, status);
+                if (string.IsNullOrWhiteSpace(dto.Status))
+                {
+                    return BadRequest(new { success = false, error = "الحالة مطلوبة" });
+                }
+
+                var success = await _ticketService.ChangeStatusAsync(id, dto.Status);
                 if (!success)
                     return NotFound(new { success = false, error = "التذكرة غير موجودة" });
 
