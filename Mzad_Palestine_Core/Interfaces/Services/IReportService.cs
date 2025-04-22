@@ -1,4 +1,5 @@
 ﻿using Mzad_Palestine_Core.DTOs;
+using Mzad_Palestine_Core.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -22,9 +23,9 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         /// <summary>
         /// Creates a new report
         /// </summary>
-        /// <param name="createReportDto">Report creation data</param>
+        /// <param name="report">Report entity to create</param>
         /// <returns>Created report</returns>
-        Task<ReportDto> CreateAsync(CreateReportDto createReportDto);
+        Task<ReportDto> CreateAsync(Report report);
 
         /// <summary>
         /// Updates an existing report

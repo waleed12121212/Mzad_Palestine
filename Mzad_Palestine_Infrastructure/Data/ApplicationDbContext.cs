@@ -276,21 +276,36 @@ namespace Mzad_Palestine_Infrastructure.Data
             modelBuilder.Entity<Report>(entity =>
             {
                 entity.HasKey(r => r.ReportId);
+                
+                entity.Property(r => r.Reason)
+                      .IsRequired()
+                      .HasMaxLength(500);
+                
+                entity.Property(r => r.Status)
+                      .IsRequired()
+                      .HasMaxLength(50)
+                      .HasDefaultValue("Pending");
+                
                 entity.Property(r => r.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
-                // العلاقة مع Reporter, ReportedListing و Resolver
+
+                // العلاقة مع Reporter
                 entity.HasOne(r => r.Reporter)
-                      .WithMany(u => u.ReportsMade)
+                      .WithMany()
                       .HasForeignKey(r => r.ReporterId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                // العلاقة مع ReportedListing
                 entity.HasOne(r => r.ReportedListing)
-                      .WithMany(l => l.Reports)
+                      .WithMany()
                       .HasForeignKey(r => r.ReportedListingId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                // العلاقة مع Resolver
                 entity.HasOne(r => r.Resolver)
-                      .WithMany(u => u.ReportsReceived)
+                      .WithMany()
                       .HasForeignKey(r => r.ResolvedBy)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
 

@@ -11,5 +11,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
     {
         Task<DisputeDto> CreateAsync(CreateDisputeDto dto);
         Task<IEnumerable<DisputeDto>> GetAllAsync( );
+        Task<DisputeDto> ResolveDisputeAsync(int id, string resolution, int resolvedById);
     }
 }

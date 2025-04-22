@@ -17,7 +17,28 @@ namespace Mzad_Palestine_Core.Models
         public int ReporterId { get; set; }
         public int ReportedListingId { get; set; }
         public int? ResolvedBy { get; set; }
-        public string Status { get; set; } = "Pending"; // القيمة الافتراضية هي معلق
+        
+        // Status as int in database
+        public int StatusId { get; set; }
+
+        [NotMapped]
+        public string Status
+        {
+            get => StatusId switch
+            {
+                0 => "Pending",
+                1 => "Resolved",
+                2 => "Rejected",
+                _ => "Unknown"
+            };
+            set => StatusId = value switch
+            {
+                "Pending" => 0,
+                "Resolved" => 1,
+                "Rejected" => 2,
+                _ => 0
+            };
+        }
 
         // Navigation Properties
         public virtual User Reporter { get; set; }

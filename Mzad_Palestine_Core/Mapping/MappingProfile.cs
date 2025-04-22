@@ -69,9 +69,12 @@ namespace Mzad_Palestine_Core.Mapping
             CreateMap<CreateReviewDto , Review>();
 
             // Report mapping
-            CreateMap<Report , ReportDto>()
-                .ForMember(dest => dest.ReportId , opt => opt.MapFrom(src => src.ReportId));
-            CreateMap<CreateReportDto , Report>();
+            CreateMap<Report, ReportDto>()
+                .ForMember(dest => dest.ReportId, opt => opt.MapFrom(src => src.ReportId))
+                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.UserName : null))
+                .ForMember(dest => dest.ReportedListingTitle, opt => opt.MapFrom(src => src.ReportedListing != null ? src.ReportedListing.Title : null))
+                .ForMember(dest => dest.ResolverName, opt => opt.MapFrom(src => src.Resolver != null ? src.Resolver.UserName : null));
+            CreateMap<CreateReportDto, Report>();
 
             // Notification mapping
             CreateMap<Notification , NotificationDto>()

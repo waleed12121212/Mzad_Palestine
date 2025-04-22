@@ -27,6 +27,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 CreatedAt = DateTime.UtcNow
             };
             await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
             return new DisputeDto
             {
                 Id = entity.DisputeId,
@@ -39,9 +40,43 @@ namespace Mzad_Palestine_Infrastructure.Services
             };
         }
 
-        public Task<IEnumerable<DisputeDto>> GetAllAsync( )
+        public async Task<IEnumerable<DisputeDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var disputes = await _repository.GetAllAsync();
+            return disputes.Select(d => new DisputeDto
+            {
+                Id = d.DisputeId,
+                UserId = d.UserId,
+                AuctionId = d.AuctionId,
+                Reason = d.Reason,
+                Status = d.Status,
+                CreatedAt = d.CreatedAt,
+                ResolvedBy = d.ResolvedBy
+            });
+        }
+
+        public async Task<DisputeDto> ResolveDisputeAsync(int id, string resolution, int resolvedById)
+        {
+            var dispute = await _repository.GetByIdAsync(id);
+            if (dispute == null)
+                throw new Exception("النزاع غير موجود");
+
+            dispute.Status = DisputeStatus.Resolved;
+            dispute.ResolvedBy = resolvedById;
+            
+            _repository.Update(dispute);
+            await _repository.SaveChangesAsync();
+
+            return new DisputeDto
+            {
+                Id = dispute.DisputeId,
+                UserId = dispute.UserId,
+                AuctionId = dispute.AuctionId,
+                Reason = dispute.Reason,
+                Status = dispute.Status,
+                CreatedAt = dispute.CreatedAt,
+                ResolvedBy = dispute.ResolvedBy
+            };
         }
     }
 }
