@@ -33,6 +33,11 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
             return await _context.Set<T>().FindAsync(id);
         }
 
+        public virtual async Task<T> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException("GetByNameAsync must be implemented in derived classes if needed.");
+        }
+
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().Where(predicate).ToListAsync();
@@ -51,6 +56,11 @@ namespace Mzad_Palestine_Infrastructure.Repositories.Common
         public virtual async Task DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
+        }
+
+        public virtual async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
         }
     }
 } 

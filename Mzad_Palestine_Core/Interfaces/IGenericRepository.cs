@@ -15,5 +15,6 @@ namespace Mzad_Palestine_Core.Interfaces
         void Update(T entity);
         Task<bool> ExistsAsync(int id);
         Task DeleteAsync(T entity);  // إضافة دالة الحذف هنا
+        Task<int> SaveChangesAsync();
     }
 }

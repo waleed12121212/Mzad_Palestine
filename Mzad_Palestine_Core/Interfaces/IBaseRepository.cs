@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -14,5 +15,6 @@ namespace Mzad_Palestine_Core.Interfaces
         void Update(T entity);
         Task DeleteAsync(T entity);
         Task<bool> ExistsAsync(int id);
+        Task<int> SaveChangesAsync();
     }
 } 

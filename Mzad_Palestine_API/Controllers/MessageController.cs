@@ -67,6 +67,7 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "لا يمكنك إرسال رسالة لنفسك" });
                 }
 
+                dto.SenderId = parsedUserId;
                 var message = await _messageService.SendAsync(dto);
                 return CreatedAtAction(nameof(GetInbox), null, new { success = true, data = message });
             }

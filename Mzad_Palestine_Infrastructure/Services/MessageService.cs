@@ -24,23 +24,25 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             var message = new Message
             {
-                ReceiverId = dto.ReceiverId,
-                Subject = dto.Subject,
-                Content = dto.Content,
-                Timestamp = DateTime.UtcNow,
+                SenderId = dto.SenderId ,
+                ReceiverId = dto.ReceiverId ,
+                Subject = dto.Subject ,
+                Content = dto.Content ,
+                Timestamp = DateTime.UtcNow ,
                 IsRead = false
             };
 
             await _repository.AddAsync(message);
+            await _repository.SaveChangesAsync();
 
             return new MessageDto
             {
-                Id = message.MessageId,
-                SenderId = message.SenderId,
-                ReceiverId = message.ReceiverId,
-                Subject = message.Subject,
-                Content = message.Content,
-                Timestamp = message.Timestamp,
+                Id = message.MessageId ,
+                SenderId = message.SenderId ,
+                ReceiverId = message.ReceiverId ,
+                Subject = message.Subject ,
+                Content = message.Content ,
+                Timestamp = message.Timestamp ,
                 IsRead = message.IsRead
             };
         }
@@ -50,12 +52,12 @@ namespace Mzad_Palestine_Infrastructure.Services
             var messages = await _repository.FindAsync(m => m.ReceiverId == userId);
             return messages.Select(m => new MessageDto
             {
-                Id = m.MessageId,
-                SenderId = m.SenderId,
-                ReceiverId = m.ReceiverId,
-                Subject = m.Subject,
-                Content = m.Content,
-                Timestamp = m.Timestamp,
+                Id = m.MessageId ,
+                SenderId = m.SenderId ,
+                ReceiverId = m.ReceiverId ,
+                Subject = m.Subject ,
+                Content = m.Content ,
+                Timestamp = m.Timestamp ,
                 IsRead = m.IsRead
             });
         }
@@ -65,32 +67,32 @@ namespace Mzad_Palestine_Infrastructure.Services
             var messages = await _repository.FindAsync(m => m.SenderId == userId);
             return messages.Select(m => new MessageDto
             {
-                Id = m.MessageId,
-                SenderId = m.SenderId,
-                ReceiverId = m.ReceiverId,
-                Subject = m.Subject,
-                Content = m.Content,
-                Timestamp = m.Timestamp,
+                Id = m.MessageId ,
+                SenderId = m.SenderId ,
+                ReceiverId = m.ReceiverId ,
+                Subject = m.Subject ,
+                Content = m.Content ,
+                Timestamp = m.Timestamp ,
                 IsRead = m.IsRead
             });
         }
 
-        public async Task<IEnumerable<MessageDto>> GetConversationAsync(int currentUserId, int otherUserId)
+        public async Task<IEnumerable<MessageDto>> GetConversationAsync(int currentUserId , int otherUserId)
         {
-            var messages = await _repository.GetConversationAsync(currentUserId, otherUserId);
+            var messages = await _repository.GetConversationAsync(currentUserId , otherUserId);
             return messages.Select(m => new MessageDto
             {
-                Id = m.MessageId,
-                SenderId = m.SenderId,
-                ReceiverId = m.ReceiverId,
-                Subject = m.Subject,
-                Content = m.Content,
-                Timestamp = m.Timestamp,
+                Id = m.MessageId ,
+                SenderId = m.SenderId ,
+                ReceiverId = m.ReceiverId ,
+                Subject = m.Subject ,
+                Content = m.Content ,
+                Timestamp = m.Timestamp ,
                 IsRead = m.IsRead
             });
         }
 
-        public async Task<bool> MarkAsReadAsync(int messageId, int userId)
+        public async Task<bool> MarkAsReadAsync(int messageId , int userId)
         {
             var message = await _repository.GetByIdAsync(messageId);
             if (message == null || message.ReceiverId != userId)

@@ -17,6 +17,7 @@ namespace Mzad_Palestine_Core.Models
         public int ReporterId { get; set; }
         public int ReportedListingId { get; set; }
         public int? ResolvedBy { get; set; }
+        public string Status { get; set; } = "Pending"; // القيمة الافتراضية هي معلق
 
         // Navigation Properties
         public virtual User Reporter { get; set; }
