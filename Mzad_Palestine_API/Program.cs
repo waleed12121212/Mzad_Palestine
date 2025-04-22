@@ -20,6 +20,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_API.ML;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -185,6 +186,7 @@ builder.Services.AddScoped<ISupportService , SupportService>();
 builder.Services.AddScoped<ICustomerSupportTicketService , CustomerSupportTicketService>();
 builder.Services.AddScoped<IAuthService , AuthService>();
 builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
+builder.Services.AddScoped<IPhonePredictionService , PhonePredictionService>();
 builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();
 builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>();
 builder.Services.AddScoped<ITransactionService , TransactionService>();
@@ -202,6 +204,9 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// إضافة خدمة الكاش
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
