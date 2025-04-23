@@ -1,6 +1,42 @@
+# مخطط قاعدة بيانات مزاد فلسطين
+
 ```mermaid
 erDiagram
-    %% Main entities
+    User ||--o{ Listing : creates
+    User ||--o{ Bid : places
+    User ||--o{ Payment : makes
+    User ||--o{ Invoice : receives
+    User ||--o{ Message : sends
+    User ||--o{ Message : receives
+    User ||--o{ Review : gives
+    User ||--o{ Review : receives
+    User ||--o{ Report : makes
+    User ||--o{ Notification : receives
+    User ||--o{ AutoBid : sets
+    User ||--o{ Dispute : raises
+    User ||--o{ Watchlist : maintains
+    User ||--o{ Subscription : subscribes
+    User ||--o{ CustomerSupportTicket : creates
+    User ||--o{ Transaction : has
+    
+    Category ||--o{ Listing : contains
+    Category ||--o{ Category : "has subcategories"
+    
+    Listing ||--|| Auction : has
+    Listing ||--o{ Review : receives
+    Listing ||--o{ Report : "may have"
+    Listing ||--o{ ListingImage : has
+    Listing ||--o{ Invoice : generates
+    Listing ||--o{ ListingTag : has
+    Listing ||--o{ Watchlist : "included in"
+    
+    Auction ||--o{ Bid : receives
+    Auction ||--o{ Payment : generates
+    Auction ||--o{ AutoBid : has
+    Auction ||--o{ Dispute : "may have"
+    
+    Tag ||--o{ ListingTag : "used in"
+
     User {
         int Id PK
         string FirstName
@@ -162,8 +198,8 @@ erDiagram
     }
 
     ListingTag {
-        int ListingId PK,FK
-        int TagId PK,FK
+        int ListingId PK_FK
+        int TagId PK_FK
     }
 
     Watchlist {
@@ -208,40 +244,4 @@ erDiagram
         string ImageUrl
         bool IsPrimary
     }
-
-    %% Relationships
-    User ||--o{ Listing : "creates"
-    User ||--o{ Bid : "places"
-    User ||--o{ Payment : "makes"
-    User ||--o{ Invoice : "receives"
-    User ||--o{ Message : "sends"
-    User ||--o{ Message : "receives"
-    User ||--o{ Review : "gives"
-    User ||--o{ Review : "receives"
-    User ||--o{ Report : "makes"
-    User ||--o{ Notification : "receives"
-    User ||--o{ AutoBid : "sets"
-    User ||--o{ Dispute : "raises"
-    User ||--o{ Watchlist : "maintains"
-    User ||--o{ Subscription : "subscribes"
-    User ||--o{ CustomerSupportTicket : "creates"
-    User ||--o{ Transaction : "has"
-    
-    Category ||--o{ Listing : "contains"
-    Category ||--o{ Category : "has subcategories"
-    
-    Listing ||--|| Auction : "has"
-    Listing ||--o{ Review : "receives"
-    Listing ||--o{ Report : "may have"
-    Listing ||--o{ ListingImage : "has"
-    Listing ||--o{ Invoice : "generates"
-    Listing ||--o{ ListingTag : "has"
-    Listing ||--o{ Watchlist : "included in"
-    
-    Auction ||--o{ Bid : "receives"
-    Auction ||--o{ Payment : "generates"
-    Auction ||--o{ AutoBid : "has"
-    Auction ||--o{ Dispute : "may have"
-    
-    Tag ||--o{ ListingTag : "used in"
-} 
+``` 
