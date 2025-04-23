@@ -1,22 +1,55 @@
 # مزاد فلسطين - Mzad Palestine
 
-## نظرة عامة
+<p align="center">
+  <img src="https://github.com/waleed12121212/Mzad_Palestine/raw/main/logo.png" alt="Mzad Palestine Logo" width="200"/>
+</p>
+
+## نظرة عامة | Overview
 مزاد فلسطين هو منصة مزادات إلكترونية متكاملة تتيح للمستخدمين إنشاء وإدارة المزادات عبر الإنترنت. يوفر النظام تجربة مستخدم سلسة وآمنة لعمليات البيع والشراء من خلال نظام المزايدة.
 
-## المميزات الرئيسية
-- **نظام مزايدة متقدم**: يدعم المزايدة اليدوية والتلقائية مع إمكانية تحديد السعر الاحتياطي وزيادة المزايدة
-- **إدارة المستخدمين**: نظام تسجيل وتوثيق متكامل مع دعم الأدوار المختلفة
-- **نظام الدفع**: دعم طرق دفع متعددة مع نظام الضمان للمعاملات المالية
-- **نظام التقييم والمراجعة**: تقييم البائعين والمشترين وإدارة التعليقات
-- **نظام الإشعارات**: إشعارات فورية لتحديثات المزادات والعروض والرسائل
-- **نظام الدعم**: نظام تذاكر دعم متكامل مع تتبع حالة الطلبات
-- **نظام التقارير**: إدارة الشكاوى والمخالفات مع آلية للتحقيق والحل
-- **قائمة المراقبة**: متابعة المزادات المفضلة وتلقي التحديثات
-- **نظام الاشتراكات**: إدارة اشتراكات المستخدمين ومميزاتهم
-- **نظام النزاعات**: حل النزاعات بين المستخدمين مع دعم الوسطاء
-- **نظام التصنيفات والعلامات**: تنظيم المنتجات حسب الفئات والعلامات
+Mzad Palestine is a comprehensive online auction platform that allows users to create and manage auctions online. The system provides a smooth and secure user experience for buying and selling through the bidding system.
 
-## التقنيات المستخدمة
+## المميزات الرئيسية | Key Features
+
+### نظام المزايدة | Auction System
+- **المزايدة اليدوية والتلقائية**: دعم المزايدات اليدوية والتلقائية مع إشعارات فورية
+- **Manual & Automatic Bidding**: Support for both manual and automatic bidding with instant notifications
+- **السعر الاحتياطي**: إمكانية تحديد سعر احتياطي للمزاد
+- **Reserve Price**: Ability to set reserve prices for auctions
+- **زيادة المزايدة**: تحديد قيمة الزيادة في المزايدة
+- **Bid Increment**: Setting bid increment values
+
+### إدارة المستخدمين | User Management
+- **التسجيل والتوثيق**: نظام تسجيل وتوثيق متكامل
+- **Registration & Authentication**: Comprehensive registration and authentication system
+- **الأدوار المختلفة**: دعم أدوار متعددة (مستخدم عادي، بائع، مشتري، مدير، مشرف)
+- **Multiple Roles**: Support for various roles (Regular User, Seller, Buyer, Admin, Moderator)
+
+### الدفع والأمان | Payment & Security
+- **طرق دفع متعددة**: دعم وسائل دفع متنوعة
+- **Multiple Payment Methods**: Support for various payment options
+- **نظام الضمان**: ضمان المعاملات المالية وحماية المستخدمين
+- **Escrow System**: Financial transaction guarantees and user protection
+
+### الميزات الإضافية | Additional Features
+- **نظام التقييم والمراجعة**: تقييم البائعين والمشترين
+- **Rating & Review System**: Seller and buyer ratings
+- **نظام الإشعارات**: إشعارات فورية للتحديثات والعروض
+- **Notification System**: Real-time notifications for updates and offers
+- **نظام الدعم**: نظام تذاكر دعم متكامل
+- **Support System**: Integrated support ticket system
+- **نظام التقارير**: إدارة الشكاوى والمخالفات
+- **Reporting System**: Complaint and violation management
+- **قائمة المراقبة**: متابعة المزادات المفضلة
+- **Watchlist**: Follow favorite auctions
+- **نظام النزاعات**: حل النزاعات بين المستخدمين
+- **Dispute System**: Resolve disputes between users
+- **نظام التصنيفات**: تنظيم المنتجات حسب الفئات
+- **Categorization System**: Organize products by categories
+- **نظام التوقعات**: توقع أسعار السيارات والهواتف باستخدام الذكاء الاصطناعي
+- **Prediction System**: Car and mobile phone price prediction using AI
+
+## التقنيات المستخدمة | Technologies Used
 - **Backend**: ASP.NET Core 8.0 Web API
 - **ORM**: Entity Framework Core
 - **Database**: SQL Server
@@ -24,70 +57,112 @@
 - **API Documentation**: Swagger/OpenAPI
 - **Validation**: FluentValidation
 - **Mapping**: AutoMapper
+- **Machine Learning**: ML.NET (للتنبؤ بأسعار السيارات والهواتف | for car and mobile phone price prediction)
 
-## هيكل المشروع
+## هيكل المشروع | Project Structure
 ```
 Mzad_Palestine/
-├── Mzad_Palestine_API/        # واجهة برمجة التطبيقات
-│   ├── Controllers/          # وحدات التحكم
-│   ├── Middleware/          # الوسائط البرمجية
-│   └── Properties/          # إعدادات التشغيل
-├── Mzad_Palestine_Core/       # طبقة النواة
-│   ├── DTO's/               # كائنات نقل البيانات
-│   ├── Enums/               # التعدادات
-│   ├── Interfaces/          # الواجهات
-│   ├── Models/              # النماذج
-│   └── Validation/          # التحقق من الصحة
-└── Mzad_Palestine_Infrastructure/  # طبقة البنية التحتية
-    ├── Data/                # سياق قاعدة البيانات
-    ├── Repositories/        # المستودعات
-    └── Services/            # الخدمات
+├── Mzad_Palestine_API/              # واجهة برمجة التطبيقات | Web API
+│   ├── Controllers/                 # وحدات التحكم | Controllers
+│   ├── Middleware/                  # الوسائط البرمجية | Middleware
+│   └── Properties/                  # إعدادات التشغيل | Launch settings
+├── Mzad_Palestine_Core/             # طبقة النواة | Core layer
+│   ├── DTO's/                       # كائنات نقل البيانات | Data Transfer Objects
+│   ├── Enums/                       # التعدادات | Enumerations
+│   ├── Interfaces/                  # الواجهات | Interfaces
+│   ├── Models/                      # النماذج | Models
+│   │   └── ML/                      # نماذج التعلم الآلي | Machine Learning Models
+│   └── Validation/                  # التحقق من الصحة | Validation
+└── Mzad_Palestine_Infrastructure/   # طبقة البنية التحتية | Infrastructure layer
+    ├── Data/                        # سياق قاعدة البيانات | Database Context
+    ├── Repositories/                # المستودعات | Repositories
+    └── Services/                    # الخدمات | Services
 ```
 
-## المتطلبات
-- .NET 8.0 SDK
-- SQL Server
-- Visual Studio 
+## نماذج البيانات | Data Models
+النظام يحتوي على عدة نماذج بيانات رئيسية تشمل:
+The system contains several key data models including:
 
-## التثبيت والتشغيل
-1. استنساخ المشروع
+- **User**: المستخدمون وبيانات الحسابات | Users and account data
+- **Listing**: القوائم والمنتجات المعروضة | Listings and products
+- **Auction**: المزادات وتفاصيلها | Auctions and their details
+- **Bid**: العروض المقدمة | Bids submitted
+- **AutoBid**: نظام المزايدة التلقائية | Automatic bidding system
+- **Payment**: المدفوعات والمعاملات المالية | Payments and financial transactions
+- **Invoice**: الفواتير | Invoices
+- **Category**: تصنيفات المنتجات | Product categories
+- **Report**: التقارير والشكاوى | Reports and complaints
+- **Dispute**: النزاعات | Disputes
+- **Review**: التقييمات والمراجعات | Ratings and reviews
+- **Message**: نظام المراسلة | Messaging system
+- **Notification**: الإشعارات | Notifications
+- **CustomerSupportTicket**: تذاكر الدعم | Support tickets
+- **Watchlist**: قائمة المراقبة | Watchlist
+- **Subscription**: الاشتراكات | Subscriptions
+- **Transaction**: سجل المعاملات | Transaction records
+
+## المتطلبات | Requirements
+- .NET 8.0 SDK
+- SQL Server 2019+
+- Visual Studio 2022+
+
+## التثبيت والتشغيل | Installation & Running
+1. استنساخ المشروع | Clone the project
 ```bash
 git clone https://github.com/waleed12121212/Mzad_Palestine.git
 cd Mzad_Palestine
 ```
 
-2. إعداد قاعدة البيانات
-- تعديل سلسلة الاتصال في `appsettings.json`
-- تنفيذ الترحيلات:
+2. إعداد قاعدة البيانات | Database setup
+- تعديل سلسلة الاتصال في `appsettings.json` | Edit connection string in `appsettings.json`
+- تنفيذ الترحيلات | Run migrations:
 ```bash
 dotnet ef database update
 ```
 
-3. تشغيل المشروع
+3. تشغيل المشروع | Run the project
 ```bash
 dotnet run --project Mzad_Palestine_API
 ```
 
-## الوثائق
-- واجهة API: `/swagger`
-- مخطط قاعدة البيانات: `docs/database-schema.pdf`
+4. فتح واجهة Swagger | Open Swagger UI
+```
+https://localhost:5001/swagger
+```
 
-## المساهمة
+## ميزات الذكاء الاصطناعي | AI Features
+يتضمن النظام نماذج تنبؤ لتقدير أسعار:
+The system includes prediction models for estimating prices of:
+
+- **السيارات**: تقدير قيمة السيارة بناءً على خصائصها | Cars: estimate car value based on its characteristics
+- **الهواتف المحمولة**: تقدير سعر الهاتف بناءً على مواصفاته | Mobile phones: estimate phone price based on specifications
+
+## الوثائق | Documentation
+- واجهة API: `/swagger` | API interface: `/swagger`
+- مخطط قاعدة البيانات: `docs/database-schema.pdf` | Database schema: `docs/database-schema.pdf`
+
+## المساهمة | Contributing
 نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
-1. عمل Fork للمشروع
+We welcome your contributions! Please follow these steps:
+
+1. عمل Fork للمشروع | Fork the project
 2. إنشاء فرع جديد للميزة (`git checkout -b feature/amazing-feature`)
-3. تنفيذ التغييرات مع الالتزام بمعايير الكود
-4. إضافة الاختبارات المناسبة
-5. تقديم Pull Request
+3. تنفيذ التغييرات مع الالتزام بمعايير الكود | Implement changes while adhering to code standards
+4. إضافة الاختبارات المناسبة | Add appropriate tests
+5. تقديم Pull Request | Submit a Pull Request
 
-## الترخيص
+## الترخيص | License
 هذا المشروع مرخص تحت رخصة MIT. انظر ملف `LICENSE` للمزيد من التفاصيل.
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
-## الاتصال والدعم
+## الاتصال والدعم | Contact & Support
 للمساعدة والاستفسارات، يرجى:
-- فتح issue في GitHub
-- التواصل عبر البريد الإلكتروني: support@mzad-palestine.com
-- زيارة موقعنا: https://mzad-palestine.com
+For help and inquiries, please:
 
-## شكر خاص
+- فتح issue في GitHub | Open an issue on GitHub
+- التواصل عبر البريد الإلكتروني: support@mzad-palestine.com | Contact via email: support@mzad-palestine.com
+- زيارة موقعنا: https://mzad-palestine.com | Visit our website: https://mzad-palestine.com
+
+## شكر خاص | Special Thanks
 شكر خاص لجميع المساهمين والداعمين لهذا المشروع.
+Special thanks to all contributors and supporters of this project.
