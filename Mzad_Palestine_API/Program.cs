@@ -24,14 +24,17 @@ using Mzad_Palestine_API.ML;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
+    options.AddPolicy(MyAllowSpecificOrigins,
+        builder =>
         {
-            policy.AllowAnyOrigin();
+            builder.AllowAnyOrigin();
         });
 });
+
 // Configure DbContext and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -57,18 +60,6 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 
 // تسجيل RoleManager بشكل صحيح
 builder.Services.AddScoped<IRoleStore<IdentityRole<int>>, RoleStore<IdentityRole<int>, ApplicationDbContext, int>>();
-
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -227,12 +218,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-// Enable CORS
 app.UseCors(MyAllowSpecificOrigins);
-
-// Important: Authentication must come before Authorization
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
