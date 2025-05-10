@@ -22,7 +22,18 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Mzad_Palestine_Core.Interfaces;
 using Mzad_Palestine_API.ML;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins ,
+        builder =>
+        {
+            builder.AllowAnyOrigin();
+        });
+});
 
 // Configure DbContext and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -49,18 +60,6 @@ builder.Services.AddIdentity<User , IdentityRole<int>>(options =>
 
 // تسجيل RoleManager بشكل صحيح
 builder.Services.AddScoped<IRoleStore<IdentityRole<int>> , RoleStore<IdentityRole<int> , ApplicationDbContext , int>>();
-
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll" ,
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -219,12 +218,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
-
-// Enable CORS
-app.UseCors("AllowAll");
-
-// Important: Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
