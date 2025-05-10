@@ -6,7 +6,12 @@
       "version": "9.0.4",
       "commands": [
         "dotnet-ef"
+<<<<<<< HEAD
       ]
+=======
+      ],
+      "rollForward": false
+>>>>>>> 772bf2ab6a8825aaf618f1800f0e64b8052389ac
     }
   }
 }

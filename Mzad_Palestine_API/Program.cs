@@ -28,7 +28,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure CORS
 builder.Services.AddCors(options =>
 {
+<<<<<<< HEAD
     options.AddPolicy(MyAllowSpecificOrigins ,
+=======
+    options.AddPolicy(MyAllowSpecificOrigins,
+>>>>>>> 772bf2ab6a8825aaf618f1800f0e64b8052389ac
         builder =>
         {
             builder.AllowAnyOrigin();
@@ -39,7 +43,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User , IdentityRole<int>>(options =>
+builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -59,7 +63,11 @@ builder.Services.AddIdentity<User , IdentityRole<int>>(options =>
 .AddDefaultTokenProviders();
 
 // تسجيل RoleManager بشكل صحيح
+<<<<<<< HEAD
 builder.Services.AddScoped<IRoleStore<IdentityRole<int>> , RoleStore<IdentityRole<int> , ApplicationDbContext , int>>();
+=======
+builder.Services.AddScoped<IRoleStore<IdentityRole<int>>, RoleStore<IdentityRole<int>, ApplicationDbContext, int>>();
+>>>>>>> 772bf2ab6a8825aaf618f1800f0e64b8052389ac
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -76,17 +84,17 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true ,
-        ValidateAudience = true ,
-        ValidateLifetime = true ,
-        ValidateIssuerSigningKey = true ,
-        ValidateActor = false ,
-        ValidateTokenReplay = false ,
-        ClockSkew = TimeSpan.Zero ,
-        ValidIssuer = jwtSettings["Issuer"] ,
-        ValidAudience = jwtSettings["Audience"] ,
-        IssuerSigningKey = new SymmetricSecurityKey(key) ,
-        NameClaimType = ClaimTypes.Name ,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidateActor = false,
+        ValidateTokenReplay = false,
+        ClockSkew = TimeSpan.Zero,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        NameClaimType = ClaimTypes.Name,
         RoleClaimType = ClaimTypes.Role
     };
     options.Events = new JwtBearerEvents
@@ -135,60 +143,60 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Register services
-builder.Services.AddScoped<ISupportService , SupportService>();
+builder.Services.AddScoped<ISupportService, SupportService>();
 
 // Register Repositories
-builder.Services.AddScoped<IUserRepository , UserRepository>();
-builder.Services.AddScoped<ICategoryRepository , CategoryRepository>();
-builder.Services.AddScoped<IListingRepository , ListingRepository>();
-builder.Services.AddScoped<IAuctionRepository , AuctionRepository>();
-builder.Services.AddScoped<IBidRepository , BidRepository>();
-builder.Services.AddScoped<IPaymentRepository , PaymentRepository>();
-builder.Services.AddScoped<IMessageRepository , MessageRepository>();
-builder.Services.AddScoped<IReviewRepository , ReviewRepository>();
-builder.Services.AddScoped<IReportRepository , ReportRepository>();
-builder.Services.AddScoped<INotificationRepository , NotificationRepository>();
-builder.Services.AddScoped<IAutoBidRepository , AutoBidRepository>();
-builder.Services.AddScoped<IDisputeRepository , DisputeRepository>();
-builder.Services.AddScoped<ITagRepository , TagRepository>();
-builder.Services.AddScoped<IWatchlistRepository , WatchlistRepository>();
-builder.Services.AddScoped<ISubscriptionRepository , SubscriptionRepository>();
-builder.Services.AddScoped<ICustomerSupportTicketRepository , CustomerSupportTicketRepository>();
-builder.Services.AddScoped<ISupportRepository , SupportRepository>();
-builder.Services.AddScoped<IAuthRepository , AuthRepository>();
-builder.Services.AddScoped<IListingImageRepository , ListingImageRepository>();
-builder.Services.AddScoped<ITransactionRepository , TransactionRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IListingRepository, ListingRepository>();
+builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+builder.Services.AddScoped<IBidRepository, BidRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IAutoBidRepository, AutoBidRepository>();
+builder.Services.AddScoped<IDisputeRepository, DisputeRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<IWatchlistRepository, WatchlistRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ICustomerSupportTicketRepository, CustomerSupportTicketRepository>();
+builder.Services.AddScoped<ISupportRepository, SupportRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IListingImageRepository, ListingImageRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 // Register UnitOfWork
-builder.Services.AddScoped<IUnitOfWork , UnitOfWork>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
 // Register Services
-builder.Services.AddScoped<IUserService , UserService>();
-builder.Services.AddScoped<ICategoryService , CategoryService>();
-builder.Services.AddScoped<IListingService , ListingService>();
-builder.Services.AddScoped<IAuctionService , AuctionService>();
-builder.Services.AddScoped<IBidService , BidService>();
-builder.Services.AddScoped<IPaymentService , PaymentService>();
-builder.Services.AddScoped<IMessageService , MessageService>();
-builder.Services.AddScoped<IReviewService , ReviewService>();
-builder.Services.AddScoped<IReportService , ReportService>();
-builder.Services.AddScoped<INotificationService , NotificationService>();
-builder.Services.AddScoped<IAutoBidService , AutoBidService>();
-builder.Services.AddScoped<IDisputeService , DisputeService>();
-builder.Services.AddScoped<ITagService , TagService>();
-builder.Services.AddScoped<IWatchlistService , WatchlistService>();
-builder.Services.AddScoped<ISubscriptionService , SubscriptionService>();
-builder.Services.AddScoped<ISupportService , SupportService>();
-builder.Services.AddScoped<ICustomerSupportTicketService , CustomerSupportTicketService>();
-builder.Services.AddScoped<IAuthService , AuthService>();
-builder.Services.AddScoped<ILaptopPredictionService , LaptopPredictionService>();
-builder.Services.AddScoped<IPhonePredictionService , PhonePredictionService>();
-builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();
-builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>();
-builder.Services.AddScoped<ITransactionService , TransactionService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IListingService, ListingService>();
+builder.Services.AddScoped<IAuctionService, AuctionService>();
+builder.Services.AddScoped<IBidService, BidService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAutoBidService, AutoBidService>();
+builder.Services.AddScoped<IDisputeService, DisputeService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IWatchlistService, WatchlistService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<ISupportService, SupportService>();
+builder.Services.AddScoped<ICustomerSupportTicketService, CustomerSupportTicketService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ILaptopPredictionService, LaptopPredictionService>();
+builder.Services.AddScoped<IPhonePredictionService, PhonePredictionService>();
+builder.Services.AddScoped<ICarPricePredictionService, CarPricePredictionService>();
+builder.Services.AddScoped<IAutoBidProcessingService, AutoBidProcessingService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -233,7 +241,7 @@ using (var scope = app.Services.CreateScope())
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-        string[] roleNames = { "User" , "Admin" , "Moderator" };
+        string[] roleNames = { "User", "Admin", "Moderator" };
 
         foreach (var roleName in roleNames)
         {
@@ -243,7 +251,7 @@ using (var scope = app.Services.CreateScope())
                 var result = await roleManager.CreateAsync(new IdentityRole<int>(roleName));
                 if (!result.Succeeded)
                 {
-                    throw new Exception($"Failed to create role {roleName}: {string.Join(", " , result.Errors)}");
+                    throw new Exception($"Failed to create role {roleName}: {string.Join(", ", result.Errors)}");
                 }
             }
         }
@@ -255,14 +263,14 @@ using (var scope = app.Services.CreateScope())
             var userRoles = await userManager.GetRolesAsync(user);
             if (!userRoles.Any())
             {
-                await userManager.AddToRoleAsync(user , "User");
+                await userManager.AddToRoleAsync(user, "User");
             }
         }
     }
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex , "An error occurred while seeding roles");
+        logger.LogError(ex, "An error occurred while seeding roles");
     }
 }
 
