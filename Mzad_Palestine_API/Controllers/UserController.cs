@@ -80,10 +80,30 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPost("profile-picture")]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10485760)] // 10MB
+        [RequestSizeLimit(10485760)]
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)
         {
             try
             {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { error = "الرجاء اختيار ملف صورة" });
+                }
+
+                // التحقق من نوع الملف
+                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                {
+                    return BadRequest(new { error = "نوع الملف غير مدعوم. يرجى تحميل صورة بصيغة JPG أو PNG أو GIF" });
+                }
+
+                // التحقق من حجم الملف (10MB كحد أقصى)
+                if (file.Length > 10485760)
+                {
+                    return BadRequest(new { error = "حجم الملف كبير جداً. الحد الأقصى هو 10MB" });
+                }
+
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
@@ -100,15 +120,16 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var pictureUrl = await _userService.UploadProfilePictureAsync(int.Parse(userId), file);
-                return Ok(new { pictureUrl });
+                return Ok(new { success = true, data = new { pictureUrl } });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -116,24 +137,24 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-                if (userRole != "Admin")
+                if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { error = "غير مصرح لك بالوصول" });
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
                 var user = await _userService.GetUserByIdAsync(id);
-                return Ok(user);
+                return Ok(new { success = true, data = user });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 

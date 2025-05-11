@@ -223,6 +223,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// تكوين الملفات الثابتة
+app.UseStaticFiles();
+
 app.MapControllers();
 
 // ✅ Seed Roles

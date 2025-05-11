@@ -199,17 +199,30 @@ namespace Mzad_Palestine_Infrastructure.Services
             if (file == null || file.Length == 0)
                 throw new Exception("لم يتم اختيار صورة");
 
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
             var extension = Path.GetExtension(file.FileName).ToLower();
             if (!allowedExtensions.Contains(extension))
-                throw new Exception("نوع الملف غير مدعوم");
+                throw new Exception("نوع الملف غير مدعوم. يرجى تحميل صورة بصيغة JPG أو PNG أو GIF");
+
+            if (file.Length > 10485760)
+                throw new Exception("حجم الملف كبير جداً. الحد الأقصى هو 10MB");
 
             var fileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine("wwwroot", "uploads", "profile-pictures", fileName);
-            var directoryPath = Path.GetDirectoryName(filePath);
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var uploadsFolder = Path.Combine(baseDirectory, "wwwroot", "uploads", "profile-pictures");
+            var filePath = Path.Combine(uploadsFolder, fileName);
 
-            if (!Directory.Exists(directoryPath))
-                Directory.CreateDirectory(directoryPath);
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                var oldFilePath = Path.Combine(baseDirectory, "wwwroot", user.ProfilePicture.TrimStart('/'));
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -217,7 +230,9 @@ namespace Mzad_Palestine_Infrastructure.Services
             }
 
             user.ProfilePicture = $"/uploads/profile-pictures/{fileName}";
-            await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                throw new Exception("فشل تحديث الصورة الشخصية");
 
             return user.ProfilePicture;
         }

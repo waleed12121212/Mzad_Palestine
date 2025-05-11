@@ -92,7 +92,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             });
         }
 
-        public async Task<bool> MarkAsReadAsync(int messageId , int userId)
+        public async Task<bool> MarkAsReadAsync(int messageId, int userId)
         {
             var message = await _repository.GetByIdAsync(messageId);
             if (message == null || message.ReceiverId != userId)
@@ -100,6 +100,7 @@ namespace Mzad_Palestine_Infrastructure.Services
 
             message.IsRead = true;
             _repository.Update(message);
+            await _repository.SaveChangesAsync();
             return true;
         }
     }

@@ -8,9 +8,12 @@ namespace Mzad_Palestine_Core.DTO_s.Watchlist
 {
     public class WatchlistDto
     {
-        public int Id { get; set; }
+        public int WatchlistId { get; set; }
         public int UserId { get; set; }
         public int ListingId { get; set; }
         public DateTime AddedAt { get; set; }
+        public string ListingTitle { get; set; }
+        public decimal ListingPrice { get; set; }
+        public string ListingImage { get; set; }
     }
 }
