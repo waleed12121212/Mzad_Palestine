@@ -16,5 +16,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<double> GetAverageRatingForUserAsync(int userId);
         Task<ReviewDto> EditAsync(int id, UpdateReviewDto dto);
         Task<bool> DeleteAsync(int id);
+        Task<(double averageRating, int totalReviews)> GetListingAverageRatingAsync(int listingId);
     }
 }

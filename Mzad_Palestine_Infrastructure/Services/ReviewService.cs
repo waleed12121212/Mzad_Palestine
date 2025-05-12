@@ -130,5 +130,17 @@ namespace Mzad_Palestine_Infrastructure.Services
             await _reviewRepository.SaveChangesAsync();
             return true;
         }
+
+        public async Task<(double averageRating, int totalReviews)> GetListingAverageRatingAsync(int listingId)
+        {
+            var reviews = await _reviewRepository.FindAsync(r => r.ListingId == listingId);
+            if (!reviews.Any())
+            {
+                return (0, 0);
+            }
+
+            var reviewsList = reviews.ToList();
+            return (reviewsList.Average(r => r.Rating), reviewsList.Count);
+        }
     }
 }

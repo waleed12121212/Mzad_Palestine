@@ -233,6 +233,33 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
+        [HttpGet("{listingId}/average")]
+        public async Task<IActionResult> GetListingAverageRating(int listingId)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                // التحقق من وجود القائمة
+                var listing = await _listingService.GetByIdAsync(listingId);
+                if (listing == null)
+                {
+                    return NotFound(new { success = false, error = "القائمة غير موجودة" });
+                }
+
+                var (averageRating, totalReviews) = await _reviewService.GetListingAverageRatingAsync(listingId);
+                return Ok(new { success = true, data = new { averageRating, totalReviews } });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> EditReview(int id, [FromBody] UpdateReviewDto dto)
         {

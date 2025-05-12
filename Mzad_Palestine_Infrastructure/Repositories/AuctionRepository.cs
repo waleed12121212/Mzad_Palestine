@@ -48,7 +48,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Auctions
                 .Where(a => a.Status == AuctionStatus.Open && a.EndTime > DateTime.UtcNow)
                 .Include(a => a.Listing)
+                    .ThenInclude(l => l.Category)
                 .Include(a => a.Bids)
+                .Include(a => a.Winner)
                 .ToListAsync();
         }
 
@@ -58,7 +60,10 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             {
                 var auction = await _context.Auctions
                     .Include(a => a.Bids)
+                        .ThenInclude(b => b.User)
                     .Include(a => a.Listing)
+                        .ThenInclude(l => l.Category)
+                    .Include(a => a.Winner)
                     .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
 
                 if (auction == null)
@@ -102,6 +107,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                     ListingId = a.ListingId,
                     Name = a.Name,
                     CategoryName = a.Listing.Category.Name,
+                    CategoryId = a.Listing.CategoryId,
                     ReservePrice = a.ReservePrice,
                     CurrentBid = a.CurrentBid,
                     BidIncrement = a.BidIncrement,

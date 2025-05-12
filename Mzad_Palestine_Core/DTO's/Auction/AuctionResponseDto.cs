@@ -9,6 +9,7 @@ namespace Mzad_Palestine_Core.DTO_s.Auction
         public int ListingId { get; set; }
         public string Name { get; set; }
         public string CategoryName { get; set; }
+        public int CategoryId { get; set; }
         public decimal ReservePrice { get; set; }
         public decimal CurrentBid { get; set; }
         public decimal BidIncrement { get; set; }

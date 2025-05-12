@@ -59,6 +59,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 AuctionId = createdAuction.AuctionId,
                 Name = createdAuction.Name,
                 CategoryName = createdAuction.Listing?.Category?.Name,
+                CategoryId = createdAuction.Listing?.CategoryId ?? 0,
                 ReservePrice = createdAuction.ReservePrice,
                 CurrentBid = createdAuction.CurrentBid,
                 BidIncrement = createdAuction.BidIncrement,
@@ -84,8 +85,10 @@ namespace Mzad_Palestine_Infrastructure.Services
                 return auctions.Select(auction => new AuctionResponseDto
                 {
                     AuctionId = auction.AuctionId,
+                    ListingId = auction.ListingId,
                     Name = auction.Name,
                     CategoryName = auction.Listing?.Category?.Name,
+                    CategoryId = auction.Listing?.CategoryId ?? 0,
                     ReservePrice = auction.ReservePrice,
                     CurrentBid = auction.CurrentBid,
                     BidIncrement = auction.BidIncrement,
@@ -128,6 +131,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 AuctionId = updatedAuction.AuctionId,
                 Name = updatedAuction.Name,
                 CategoryName = updatedAuction.Listing?.Category?.Name,
+                CategoryId = updatedAuction.Listing?.CategoryId ?? 0,
                 ReservePrice = updatedAuction.ReservePrice,
                 CurrentBid = updatedAuction.CurrentBid,
                 BidIncrement = updatedAuction.BidIncrement,
@@ -189,6 +193,16 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ImageUrl = auction.ImageUrl,
                 CreatedAt = auction.CreatedAt,
                 UpdatedAt = auction.UpdatedAt,
+                Listing = auction.Listing != null ? new Listing
+                {
+                    ListingId = auction.Listing.ListingId,
+                    CategoryId = auction.Listing.CategoryId,
+                    Category = auction.Listing.Category != null ? new Category
+                    {
+                        Id = auction.Listing.Category.Id,
+                        Name = auction.Listing.Category.Name
+                    } : null
+                } : null,
                 Bids = auction.Bids?.Select(b => new Bid
                 {
                     BidId = b.BidId,
@@ -240,6 +254,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                     ListingId = auction.ListingId,
                     Name = auction.Name,
                     CategoryName = auction.Listing?.Category?.Name,
+                    CategoryId = auction.Listing?.CategoryId ?? 0,
                     ReservePrice = auction.ReservePrice,
                     CurrentBid = auction.CurrentBid,
                     BidIncrement = auction.BidIncrement,
@@ -268,6 +283,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                     ListingId = auction.ListingId,
                     Name = auction.Name,
                     CategoryName = auction.Listing?.Category?.Name,
+                    CategoryId = auction.Listing?.CategoryId ?? 0,
                     ReservePrice = auction.ReservePrice,
                     CurrentBid = auction.CurrentBid,
                     BidIncrement = auction.BidIncrement,
