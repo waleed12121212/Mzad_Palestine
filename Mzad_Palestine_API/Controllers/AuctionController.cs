@@ -122,7 +122,14 @@ namespace Mzad_Palestine_API.Controllers
                 if (auction == null)
                     return NotFound(new { error = "المزاد غير موجود" });
 
-                return Ok(new { success = true , data = auction });
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+
+                var jsonResult = JsonSerializer.Serialize(new { success = true, data = auction }, jsonOptions);
+                return Content(jsonResult, "application/json");
             }
             catch (Exception ex)
             {
@@ -305,8 +312,7 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var auctions = await _auctionService.GetUserAuctionsAsync(userId);
-                var jsonResult = JsonSerializer.Serialize(new { success = true, data = auctions }, _jsonOptions);
-                return Content(jsonResult, "application/json");
+                return Ok(new { success = true, data = auctions });
             }
             catch (Exception ex)
             {

@@ -22,11 +22,11 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpGet("current")]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser( )
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -55,7 +55,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -70,7 +70,7 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
-                var updatedUser = await _userService.UpdateProfileAsync(int.Parse(userId), profileDto);
+                var updatedUser = await _userService.UpdateProfileAsync(int.Parse(userId) , profileDto);
                 return Ok(updatedUser);
             }
             catch (Exception ex)
@@ -92,7 +92,7 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 // التحقق من نوع الملف
-                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                var allowedTypes = new[] { "image/jpeg" , "image/png" , "image/gif" };
                 if (!allowedTypes.Contains(file.ContentType.ToLower()))
                 {
                     return BadRequest(new { error = "نوع الملف غير مدعوم. يرجى تحميل صورة بصيغة JPG أو PNG أو GIF" });
@@ -104,7 +104,7 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { error = "حجم الملف كبير جداً. الحد الأقصى هو 10MB" });
                 }
 
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -119,25 +119,24 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
-                var pictureUrl = await _userService.UploadProfilePictureAsync(int.Parse(userId), file);
-                return Ok(new { success = true, data = new { pictureUrl } });
+                var pictureUrl = await _userService.UploadProfilePictureAsync(int.Parse(userId) , file);
+                return Ok(new { success = true , data = new { pictureUrl } });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -146,24 +145,24 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
                 }
 
                 var user = await _userService.GetUserByIdAsync(id);
-                return Ok(new { success = true, data = user });
+                return Ok(new { success = true , data = user });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers( )
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -192,7 +191,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -219,11 +218,11 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpPut("{id}/role")]
-        public async Task<IActionResult> ChangeUserRole(int id, [FromBody] ChangeUserRoleDto roleDto)
+        public async Task<IActionResult> ChangeUserRole(int id , [FromBody] ChangeUserRoleDto roleDto)
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -238,7 +237,7 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "غير مصرح لك بالوصول" });
                 }
 
-                var result = await _userService.ChangeUserRoleAsync(id, roleDto.NewRole);
+                var result = await _userService.ChangeUserRoleAsync(id , roleDto.NewRole);
                 if (result)
                     return Ok(new { message = "تم تغيير دور المستخدم بنجاح" });
                 return BadRequest(new { error = "فشل تغيير دور المستخدم" });

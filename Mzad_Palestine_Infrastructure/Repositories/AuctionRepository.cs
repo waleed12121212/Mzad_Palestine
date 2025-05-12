@@ -10,12 +10,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Mzad_Palestine_Infrastructure.Repositories
 {
     public class AuctionRepository : GenericRepository<Auction>, IAuctionRepository
     {
-        public AuctionRepository(ApplicationDbContext context) : base(context) { }
+        private readonly ILogger<AuctionRepository> _logger;
+
+        public AuctionRepository(ApplicationDbContext context, ILogger<AuctionRepository> logger) : base(context)
+        {
+            _logger = logger;
+        }
 
         public async Task CloseAuctionAsync(int auctionId)
         {
@@ -42,15 +48,44 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Auctions
                 .Where(a => a.Status == AuctionStatus.Open && a.EndTime > DateTime.UtcNow)
                 .Include(a => a.Listing)
+                .Include(a => a.Bids)
                 .ToListAsync();
         }
 
         public async Task<Auction> GetAuctionWithBidsAsync(int auctionId)
         {
-            return await _context.Auctions
-                .Include(a => a.Bids)
-                .Include(a => a.Listing)
-                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+            try
+            {
+                var auction = await _context.Auctions
+                    .Include(a => a.Bids)
+                    .Include(a => a.Listing)
+                    .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+                if (auction == null)
+                {
+                    _logger.LogWarning($"Auction {auctionId} not found");
+                    return null;
+                }
+
+                _logger.LogInformation($"Retrieved auction {auctionId} with {auction.Bids?.Count ?? 0} bids");
+                
+                // Verify bid count matches database
+                var directBidCount = await _context.Bids
+                    .Where(b => b.AuctionId == auctionId)
+                    .CountAsync();
+                    
+                if (directBidCount != (auction.Bids?.Count ?? 0))
+                {
+                    _logger.LogWarning($"Bid count mismatch for auction {auctionId}. EF Count: {auction.Bids?.Count ?? 0}, Direct DB Count: {directBidCount}");
+                }
+
+                return auction;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving auction {auctionId} with bids");
+                throw;
+            }
         }
 
         public async Task<IEnumerable<AuctionResponseDto>> GetByUserIdAsync(int userId)
@@ -64,6 +99,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Select(a => new AuctionResponseDto
                 {
                     AuctionId = a.AuctionId,
+                    ListingId = a.ListingId,
                     Name = a.Name,
                     CategoryName = a.Listing.Category.Name,
                     ReservePrice = a.ReservePrice,
@@ -84,6 +120,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Auctions
                 .Where(a => a.Status == AuctionStatus.Closed)
                 .Include(a => a.Listing)
+                    .ThenInclude(l => l.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
                 .ToListAsync();
         }
 
@@ -98,6 +137,9 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _context.Auctions
                 .Where(a => a.Status == AuctionStatus.Open)
                 .Include(a => a.Listing)
+                    .ThenInclude(l => l.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
                 .ToListAsync();
         }
 

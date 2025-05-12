@@ -69,12 +69,12 @@ namespace Mzad_Palestine_Core.Mapping
             CreateMap<CreateReviewDto , Review>();
 
             // Report mapping
-            CreateMap<Report, ReportDto>()
-                .ForMember(dest => dest.ReportId, opt => opt.MapFrom(src => src.ReportId))
-                .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.UserName : null))
-                .ForMember(dest => dest.ReportedListingTitle, opt => opt.MapFrom(src => src.ReportedListing != null ? src.ReportedListing.Title : null))
-                .ForMember(dest => dest.ResolverName, opt => opt.MapFrom(src => src.Resolver != null ? src.Resolver.UserName : null));
-            CreateMap<CreateReportDto, Report>();
+            CreateMap<Report , ReportDto>()
+                .ForMember(dest => dest.ReportId , opt => opt.MapFrom(src => src.ReportId))
+                .ForMember(dest => dest.ReporterName , opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.UserName : null))
+                .ForMember(dest => dest.ReportedListingTitle , opt => opt.MapFrom(src => src.ReportedListing != null ? src.ReportedListing.Title : null))
+                .ForMember(dest => dest.ResolverName , opt => opt.MapFrom(src => src.Resolver != null ? src.Resolver.UserName : null));
+            CreateMap<CreateReportDto , Report>();
 
             // Notification mapping
             CreateMap<Notification , NotificationDto>()
@@ -98,19 +98,8 @@ namespace Mzad_Palestine_Core.Mapping
             CreateMap<ListingTag , ListingTagDto>();
 
             // Watchlist mapping
-            CreateMap<Watchlist, WatchlistDto>()
-                .ForMember(dest => dest.WatchlistId, opt => opt.MapFrom(src => src.WatchlistId))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.ListingId, opt => opt.MapFrom(src => src.ListingId))
-                .ForMember(dest => dest.AddedAt, opt => opt.MapFrom(src => src.AddedAt))
-                .ForMember(dest => dest.ListingTitle, opt => opt.MapFrom(src => src.Listing.Title))
-                .ForMember(dest => dest.ListingPrice, opt => opt.MapFrom(src => src.Listing.Price))
-                .ForMember(dest => dest.ListingImage, opt => opt.MapFrom(src => 
-                    src.Listing.Images != null && src.Listing.Images.Any() 
-                        ? (src.Listing.Images.FirstOrDefault(i => i.IsMainImage) != null 
-                            ? src.Listing.Images.FirstOrDefault(i => i.IsMainImage).ImageUrl 
-                            : src.Listing.Images.First().ImageUrl)
-                        : null));
+            CreateMap<Watchlist , WatchlistDto>()
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.WatchlistId));
 
             // Subscription mapping
             CreateMap<Subscription , SubscriptionDto>()

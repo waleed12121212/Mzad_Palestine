@@ -169,7 +169,52 @@ namespace Mzad_Palestine_Infrastructure.Services
 
         public async Task<Auction> GetAuctionDetailsAsync(int auctionId)
         {
-            return await _repository.GetByIdAsync(auctionId);
+            var auction = await _repository.GetAuctionWithBidsAsync(auctionId);
+            if (auction == null) return null;
+
+            // Create a new auction object without circular references
+            var auctionDto = new Auction
+            {
+                AuctionId = auction.AuctionId,
+                ListingId = auction.ListingId,
+                UserId = auction.UserId,
+                Name = auction.Name,
+                StartTime = auction.StartTime,
+                EndTime = auction.EndTime,
+                ReservePrice = auction.ReservePrice,
+                CurrentBid = auction.CurrentBid,
+                BidIncrement = auction.BidIncrement,
+                WinnerId = auction.WinnerId,
+                Status = auction.Status,
+                ImageUrl = auction.ImageUrl,
+                CreatedAt = auction.CreatedAt,
+                UpdatedAt = auction.UpdatedAt,
+                Bids = auction.Bids?.Select(b => new Bid
+                {
+                    BidId = b.BidId,
+                    AuctionId = b.AuctionId,
+                    UserId = b.UserId,
+                    BidAmount = b.BidAmount,
+                    BidTime = b.BidTime,
+                    IsAutoBid = b.IsAutoBid,
+                    IsWinner = b.IsWinner,
+                    Status = b.Status,
+                    User = b.User != null ? new User
+                    {
+                        Id = b.User.Id,
+                        UserName = b.User.UserName,
+                        Email = b.User.Email
+                    } : null
+                }).ToList(),
+                Winner = auction.Winner != null ? new User
+                {
+                    Id = auction.Winner.Id,
+                    UserName = auction.Winner.UserName,
+                    Email = auction.Winner.Email
+                } : null
+            };
+
+            return auctionDto;
         }
 
         public async Task<IEnumerable<AuctionResponseDto>> GetUserAuctionsAsync(int userId)
@@ -192,6 +237,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 return auctions.Select(auction => new AuctionResponseDto
                 {
                     AuctionId = auction.AuctionId,
+                    ListingId = auction.ListingId,
                     Name = auction.Name,
                     CategoryName = auction.Listing?.Category?.Name,
                     ReservePrice = auction.ReservePrice,
@@ -219,6 +265,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 return auctions.Select(auction => new AuctionResponseDto
                 {
                     AuctionId = auction.AuctionId,
+                    ListingId = auction.ListingId,
                     Name = auction.Name,
                     CategoryName = auction.Listing?.Category?.Name,
                     ReservePrice = auction.ReservePrice,
