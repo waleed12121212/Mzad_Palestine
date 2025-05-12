@@ -89,8 +89,8 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateReportDto createReportDto)
+        [HttpPost("{ListingId}")]
+        public async Task<IActionResult> Create(int ListingId, [FromBody] CreateReportDto createReportDto)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "يجب تحديد سبب البلاغ" });
                 }
 
-                if (createReportDto.ReportedListingId <= 0)
+                if (ListingId <= 0)
                 {
                     return BadRequest(new { success = false, error = "يجب تحديد معرف الإعلان المبلغ عنه" });
                 }
@@ -127,7 +127,7 @@ namespace Mzad_Palestine_API.Controllers
                 {
                     Reason = createReportDto.Reason,
                     ReporterId = int.Parse(userId),
-                    ReportedListingId = createReportDto.ReportedListingId,
+                    ReportedListingId = ListingId,
                     CreatedAt = DateTime.UtcNow
                 };
 

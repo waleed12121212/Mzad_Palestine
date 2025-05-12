@@ -28,5 +28,6 @@ namespace Mzad_Palestine_Core.DTOs
     {
         public string Reason { get; set; }
         public int? ResolvedBy { get; set; }
+        public int StatusId { get; set; }
     }
 } 

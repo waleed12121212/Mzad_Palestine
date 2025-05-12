@@ -61,16 +61,22 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 // التحقق من وجود المزاد
-                var auction = await _auctionService.GetByIdAsync(dto.AuctionId);
+                var auction = await _auctionService.GetAuctionWithBidsAsync(dto.AuctionId);
                 if (auction == null)
                 {
                     return NotFound(new { success = false, error = "المزاد غير موجود" });
                 }
 
-                // التحقق من أن المستخدم مشارك في المزاد
-                if (auction.UserId != parsedUserId && !auction.Bids.Any(b => b.UserId == parsedUserId))
+                // التحقق من أن المستخدم ليس صاحب المزاد وأنه مشارك في المزاد
+                if (auction.UserId == parsedUserId)
                 {
-                    return BadRequest(new { success = false, error = "غير مصرح لك بإنشاء نزاع على هذا المزاد" });
+                    return BadRequest(new { success = false, error = "لا يمكن لصاحب المزاد إنشاء نزاع على مزاده" });
+                }
+
+                // التحقق من أن المستخدم مشارك في المزاد
+                if (!auction.Bids.Any(b => b.UserId == parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "يجب أن تكون مشارك في المزاد لإنشاء نزاع" });
                 }
 
                 dto.UserId = parsedUserId;
@@ -224,27 +230,29 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false, error = "غير مصرح لك بحل النزاعات" });
                 }
 
+                // الحصول على معرف المسؤول
+                var adminId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(adminId) || !int.TryParse(adminId, out int parsedAdminId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المسؤول غير صالح" });
+                }
+
                 if (string.IsNullOrWhiteSpace(resolution))
                 {
                     return BadRequest(new { success = false, error = "قرار حل النزاع مطلوب" });
                 }
 
-                var disputes = await _disputeService.GetAllAsync();
-                var dispute = disputes.FirstOrDefault(d => d.Id == id);
-                if (dispute == null)
+                var resolvedDispute = await _disputeService.ResolveDisputeAsync(id, resolution, parsedAdminId);
+                if (resolvedDispute == null)
                 {
                     return NotFound(new { success = false, error = "النزاع غير موجود" });
                 }
 
-                if (dispute.Status == DisputeStatus.Resolved)
-                {
-                    return BadRequest(new { success = false, error = "النزاع تم حله مسبقاً" });
-                }
-
-                // هنا يمكن إضافة منطق حل النزاع
-                // مثلاً تحديث حالة النزاع وإضافة القرار
-
-                return Ok(new { success = true, message = "تم حل النزاع بنجاح" });
+                return Ok(new { 
+                    success = true, 
+                    message = "تم حل النزاع بنجاح",
+                    data = resolvedDispute 
+                });
             }
             catch (Exception ex)
             {

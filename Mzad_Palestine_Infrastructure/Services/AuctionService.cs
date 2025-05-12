@@ -440,5 +440,10 @@ namespace Mzad_Palestine_Infrastructure.Services
                 throw new Exception($"حدث خطأ أثناء حذف المزاد: {ex.Message}");
             }
         }
+
+        public async Task<Auction> GetAuctionWithBidsAsync(int auctionId)
+        {
+            return await _repository.GetAuctionWithBidsAsync(auctionId);
+        }
     }
 }

@@ -19,5 +19,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task DeleteAuctionAsync(int auctionId, int userId);
         Task<IEnumerable<AuctionResponseDto>> GetActiveAsync();
         Task<Auction> GetByIdAsync(int id);
+        Task<Auction> GetAuctionWithBidsAsync(int auctionId);
     }
 }

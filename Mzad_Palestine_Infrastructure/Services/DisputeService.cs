@@ -20,61 +20,64 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             var entity = new Dispute
             {
-                UserId = dto.UserId,
-                AuctionId = dto.AuctionId,
-                Reason = dto.Reason,
-                Status = DisputeStatus.Open,
+                UserId = dto.UserId ,
+                AuctionId = dto.AuctionId ,
+                Reason = dto.Reason ,
+                Status = DisputeStatus.Open ,
                 CreatedAt = DateTime.UtcNow
             };
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
             return new DisputeDto
             {
-                Id = entity.DisputeId,
-                UserId = entity.UserId,
-                AuctionId = entity.AuctionId,
-                Reason = entity.Reason,
-                Status = entity.Status,
-                CreatedAt = entity.CreatedAt,
+                Id = entity.DisputeId ,
+                UserId = entity.UserId ,
+                AuctionId = entity.AuctionId ,
+                Reason = entity.Reason ,
+                Status = entity.Status ,
+                CreatedAt = entity.CreatedAt ,
                 ResolvedBy = entity.ResolvedBy
             };
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetAllAsync()
+        public async Task<IEnumerable<DisputeDto>> GetAllAsync( )
         {
             var disputes = await _repository.GetAllAsync();
             return disputes.Select(d => new DisputeDto
             {
-                Id = d.DisputeId,
-                UserId = d.UserId,
-                AuctionId = d.AuctionId,
-                Reason = d.Reason,
-                Status = d.Status,
-                CreatedAt = d.CreatedAt,
+                Id = d.DisputeId ,
+                UserId = d.UserId ,
+                AuctionId = d.AuctionId ,
+                Reason = d.Reason ,
+                Status = d.Status ,
+                CreatedAt = d.CreatedAt ,
                 ResolvedBy = d.ResolvedBy
             });
         }
 
-        public async Task<DisputeDto> ResolveDisputeAsync(int id, string resolution, int resolvedById)
+        public async Task<DisputeDto> ResolveDisputeAsync(int id , string resolution , int resolvedById)
         {
             var dispute = await _repository.GetByIdAsync(id);
             if (dispute == null)
                 throw new Exception("النزاع غير موجود");
 
+            if (dispute.Status == DisputeStatus.Resolved)
+                throw new Exception("النزاع تم حله مسبقاً");
+
             dispute.Status = DisputeStatus.Resolved;
             dispute.ResolvedBy = resolvedById;
-            
+
             _repository.Update(dispute);
             await _repository.SaveChangesAsync();
 
             return new DisputeDto
             {
-                Id = dispute.DisputeId,
-                UserId = dispute.UserId,
-                AuctionId = dispute.AuctionId,
-                Reason = dispute.Reason,
-                Status = dispute.Status,
-                CreatedAt = dispute.CreatedAt,
+                Id = dispute.DisputeId ,
+                UserId = dispute.UserId ,
+                AuctionId = dispute.AuctionId ,
+                Reason = dispute.Reason ,
+                Status = dispute.Status ,
+                CreatedAt = dispute.CreatedAt ,
                 ResolvedBy = dispute.ResolvedBy
             };
         }
