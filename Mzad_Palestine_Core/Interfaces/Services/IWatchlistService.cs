@@ -11,5 +11,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
     {
         Task<WatchlistDto> AddAsync(int userId , int listingId);
         Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId);
+        Task DeleteFromWatchlistAsync(int userId, int listingId);
     }
 }

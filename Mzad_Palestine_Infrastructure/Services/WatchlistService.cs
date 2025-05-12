@@ -15,9 +15,46 @@ namespace Mzad_Palestine_Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
-        public Task<WatchlistDto> AddAsync(int userId , int listingId)
+        public async Task<WatchlistDto> AddAsync(int userId, int listingId)
         {
-            throw new NotImplementedException();
+            // Check if the item is already in the watchlist
+            var existingWatchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
+                w.UserId == userId && w.ListingId == listingId)).FirstOrDefault();
+
+            if (existingWatchlist != null)
+            {
+                throw new Exception("هذا المنتج موجود بالفعل في المفضلة");
+            }
+
+            var watchlist = new Watchlist
+            {
+                UserId = userId,
+                ListingId = listingId,
+                AddedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Watchlists.AddAsync(watchlist);
+            await _unitOfWork.CompleteAsync();
+
+            return new WatchlistDto
+            {
+                Id = watchlist.WatchlistId,
+                UserId = watchlist.UserId,
+                ListingId = watchlist.ListingId,
+                AddedAt = watchlist.AddedAt
+            };
+        }
+
+        public async Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId)
+        {
+            var watchlists = await _unitOfWork.Watchlists.FindAsync(w => w.UserId == userId);
+            return watchlists.Select(w => new WatchlistDto
+            {
+                Id = w.WatchlistId,
+                UserId = w.UserId,
+                ListingId = w.ListingId,
+                AddedAt = w.AddedAt
+            });
         }
 
         public async Task<Watchlist> AddToWatchlistAsync(CreateWatchlistDto dto)
@@ -34,10 +71,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             await _unitOfWork.CompleteAsync();
             return watchlist;
         }
-        public Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId)
-        {
-            throw new NotImplementedException();
-        }
+
         public async Task<IEnumerable<Watchlist>> GetUserWatchlistAsync(int userId)
         {
             return await _unitOfWork.Watchlists.FindAsync(w => w.UserId == userId);
@@ -50,14 +84,14 @@ namespace Mzad_Palestine_Infrastructure.Services
             return watchlist.Any();
         }
 
-        public async Task DeleteFromWatchlistAsync(int userId , int listingId)
+        public async Task DeleteFromWatchlistAsync(int userId, int listingId)
         {
             var watchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
                 w.UserId == userId && w.ListingId == listingId)).FirstOrDefault();
 
             if (watchlist != null)
             {
-                _unitOfWork.Watchlists.DeleteAsync(watchlist);
+                await _unitOfWork.Watchlists.DeleteAsync(watchlist);
                 await _unitOfWork.CompleteAsync();
             }
         }
