@@ -32,5 +32,8 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         
         // التحقق من صلاحية الرمز
         Task<string> ValidateTokenAsync(string token);
+
+        // التحقق من رمز تأكيد البريد الإلكتروني
+        Task<string> VerifyEmailWithCodeAsync(string email, string code);
     }
 }

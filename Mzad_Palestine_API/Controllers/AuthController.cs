@@ -210,6 +210,20 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
+        [HttpPost("verify-email-code")]
+        public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeDto request)
+        {
+            try
+            {
+                var result = await _authService.VerifyEmailWithCodeAsync(request.Email, request.VerificationCode);
+                return Ok(new { message = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         //[HttpGet]
         //public async Task<IActionResult> GetAll( )
         //{

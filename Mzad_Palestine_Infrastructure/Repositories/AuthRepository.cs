@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Infrastructure.Data;
 using System;
@@ -17,24 +18,31 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 {
     public class AuthRepository : IAuthRepository
     {
+        private static readonly Dictionary<string, (string Code, DateTime Expiry)> _verificationCodes = new();
+        private const int VERIFICATION_CODE_LENGTH = 6;
+        private const int VERIFICATION_CODE_EXPIRY_MINUTES = 15;
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly IEmailService _emailService;
 
         public AuthRepository(
             ApplicationDbContext context,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IConfiguration configuration,
-            RoleManager<IdentityRole<int>> roleManager)
+            RoleManager<IdentityRole<int>> roleManager,
+            IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
 
         public async Task<string> LoginAsync(string email, string password)
@@ -324,6 +332,85 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             }
         }
 
+        private string GenerateVerificationCode()
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
+        }
+
+        public async Task<string> SendEmailConfirmationLinkAsync(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                    return "المستخدم غير موجود";
+
+                var verificationCode = GenerateVerificationCode();
+                _verificationCodes[email] = (verificationCode, DateTime.UtcNow.AddMinutes(VERIFICATION_CODE_EXPIRY_MINUTES));
+
+                await _emailService.SendEmailConfirmationAsync(email, user.Id.ToString(), verificationCode, "");
+                
+                return "تم إرسال رمز التأكيد إلى بريدك الإلكتروني";
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء إرسال رمز التأكيد: {ex.Message}";
+            }
+        }
+
+        public async Task<string> VerifyEmailWithCodeAsync(string email, string code)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                    return "المستخدم غير موجود";
+
+                if (!_verificationCodes.ContainsKey(email))
+                    return "لم يتم إرسال رمز تحقق لهذا البريد الإلكتروني";
+
+                var (storedCode, expiry) = _verificationCodes[email];
+                
+                if (DateTime.UtcNow > expiry)
+                {
+                    _verificationCodes.Remove(email);
+                    return "انتهت صلاحية رمز التحقق";
+                }
+
+                if (code != storedCode)
+                    return "رمز التحقق غير صحيح";
+
+                // Log the values before update
+                Console.WriteLine($"Before update - EmailConfirmed: {user.EmailConfirmed}, IsVerified: {user.IsVerified}");
+
+                user.EmailConfirmed = true;
+                user.IsVerified = true;
+
+                // Log the values after setting
+                Console.WriteLine($"After setting values - EmailConfirmed: {user.EmailConfirmed}, IsVerified: {user.IsVerified}");
+                
+                var result = await _userManager.UpdateAsync(user);
+                
+                if (!result.Succeeded)
+                {
+                    Console.WriteLine($"Update failed - Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    return string.Join(", ", result.Errors.Select(e => e.Description));
+                }
+
+                // Verify the update by retrieving the user again
+                var updatedUser = await _userManager.FindByEmailAsync(email);
+                Console.WriteLine($"After update (retrieved from db) - EmailConfirmed: {updatedUser.EmailConfirmed}, IsVerified: {updatedUser.IsVerified}");
+
+                _verificationCodes.Remove(email);
+                return "تم تأكيد البريد الإلكتروني بنجاح";
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء التحقق من رمز التأكيد: {ex.Message}";
+            }
+        }
+
         public async Task<string> ForgotPasswordAsync(string email)
         {
             try
@@ -332,9 +419,12 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 if (user == null)
                     return "المستخدم غير موجود";
 
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                // هنا يمكنك إرسال البريد الإلكتروني مع الرمز
-                return token;
+                var verificationCode = GenerateVerificationCode();
+                _verificationCodes[email] = (verificationCode, DateTime.UtcNow.AddMinutes(VERIFICATION_CODE_EXPIRY_MINUTES));
+
+                await _emailService.SendPasswordResetAsync(email, verificationCode, "");
+
+                return "تم إرسال رمز إعادة تعيين كلمة المرور إلى بريدك الإلكتروني";
             }
             catch (Exception ex)
             {
@@ -359,24 +449,6 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             catch (Exception ex)
             {
                 return $"حدث خطأ أثناء تأكيد البريد الإلكتروني: {ex.Message}";
-            }
-        }
-
-        public async Task<string> SendEmailConfirmationLinkAsync(string email)
-        {
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                    return "المستخدم غير موجود";
-
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                // هنا يمكنك إرسال البريد الإلكتروني مع الرمز
-                return token;
-            }
-            catch (Exception ex)
-            {
-                return $"حدث خطأ أثناء إرسال رابط التأكيد: {ex.Message}";
             }
         }
     }

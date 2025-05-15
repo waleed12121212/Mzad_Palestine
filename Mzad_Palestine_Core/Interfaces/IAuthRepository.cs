@@ -23,5 +23,8 @@ namespace Mzad_Palestine_Core.Interfaces
         Task<string> ConfirmEmailAsync(string userId, string token);
         Task<string> SendEmailConfirmationLinkAsync(string email);
         Task<string> ValidateTokenAsync(string token);
+        
+        // التحقق من رمز تأكيد البريد الإلكتروني
+        Task<string> VerifyEmailWithCodeAsync(string email, string code);
     }
 }

@@ -125,5 +125,17 @@ namespace Mzad_Palestine_Infrastructure.Services
                 return $"حدث خطأ أثناء التحقق من الرمز: {ex.Message}";
             }
         }
+
+        public async Task<string> VerifyEmailWithCodeAsync(string email, string code)
+        {
+            try
+            {
+                return await _authRepository.VerifyEmailWithCodeAsync(email, code);
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء التحقق من رمز التأكيد: {ex.Message}";
+            }
+        }
     }
 }

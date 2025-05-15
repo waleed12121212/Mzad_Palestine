@@ -189,6 +189,8 @@ builder.Services.AddScoped<IPhonePredictionService , PhonePredictionService>();
 builder.Services.AddScoped<ICarPricePredictionService , CarPricePredictionService>();
 builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>();
 builder.Services.AddScoped<ITransactionService , TransactionService>();
+builder.Services.AddScoped<IImageService , ImageService>();
+builder.Services.AddScoped<IEmailService , EmailService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
