@@ -14,5 +14,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<bool> MarkAllAsReadAsync(int userId);
         Task<bool> DeleteAsync(int notificationId, int userId);
         Task<bool> ClearAllAsync(int userId);
+        Task<NotificationDto> CreateNotificationAsync(CreateNotificationDto dto);
     }
 }

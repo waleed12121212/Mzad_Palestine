@@ -1,4 +1,5 @@
 ﻿using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,16 +16,41 @@ namespace Mzad_Palestine_Core.Models
         public int ListingId { get; set; }
         public int UserId { get; set; }
         public string Name { get; set; }
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
-        public DateTime EndTime { get; set; }
+
+        private DateTime _startTime;
+        public DateTime StartTime
+        {
+            get => _startTime.ToPalestineTime();
+            set => _startTime = value.ToUtcFromPalestine();
+        }
+
+        private DateTime _endTime;
+        public DateTime EndTime
+        {
+            get => _endTime.ToPalestineTime();
+            set => _endTime = value.ToUtcFromPalestine();
+        }
+
         public decimal ReservePrice { get; set; }
         public decimal CurrentBid { get; set; }
         public decimal BidIncrement { get; set; }
         public int? WinnerId { get; set; }
         public AuctionStatus Status { get; set; }
         public string ImageUrl { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
+
+        private DateTime _createdAt;
+        public DateTime CreatedAt
+        {
+            get => _createdAt.ToPalestineTime();
+            set => _createdAt = value.ToUtcFromPalestine();
+        }
+
+        private DateTime? _updatedAt;
+        public DateTime? UpdatedAt
+        {
+            get => _updatedAt?.ToPalestineTime();
+            set => _updatedAt = value?.ToUtcFromPalestine();
+        }
 
         // الملاحة
         public Listing Listing { get; set; }

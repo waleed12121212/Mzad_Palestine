@@ -37,7 +37,8 @@ namespace Mzad_Palestine_Infrastructure.Services
                     RelatedId = n.RelatedId,
                     Message = n.Message,
                     Type = n.Type.ToString(),
-                    Status = n.Status.ToString()
+                    Status = n.Status.ToString(),
+                    CreatedAt = n.CreatedAt
                 });
             }
             catch (Exception ex)
@@ -151,6 +152,49 @@ namespace Mzad_Palestine_Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error clearing all notifications for user {userId}");
+                throw;
+            }
+        }
+
+        public async Task<NotificationDto> CreateNotificationAsync(CreateNotificationDto dto)
+        {
+            try
+            {
+                _logger.LogInformation($"Creating notification for user {dto.UserId}");
+                
+                NotificationType notificationType;
+                if (!Enum.TryParse(dto.Type, out notificationType))
+                {
+                    notificationType = NotificationType.General;
+                }
+
+                var notification = new Notification
+                {
+                    UserId = dto.UserId,
+                    Message = dto.Message,
+                    Type = notificationType,
+                    Status = NotificationStatus.Unread,
+                    CreatedAt = DateTime.Now
+                };
+
+                await _unitOfWork.Notifications.AddAsync(notification);
+                await _unitOfWork.CompleteAsync();
+
+                _logger.LogInformation($"Successfully created notification {notification.NotificationId}");
+                
+                return new NotificationDto
+                {
+                    Id = notification.NotificationId,
+                    UserId = notification.UserId,
+                    Message = notification.Message,
+                    Type = notification.Type.ToString(),
+                    Status = notification.Status.ToString(),
+                    CreatedAt = notification.CreatedAt
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error creating notification for user {dto.UserId}");
                 throw;
             }
         }

@@ -242,5 +242,46 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { success = false , error = ex.Message });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateNotification([FromBody] CreateNotificationDto dto)
+        {
+            try
+            {
+                _logger.LogInformation($"Creating notification for user {dto.UserId}");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    _logger.LogWarning("No authorization token provided");
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("User ID not found in token");
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    _logger.LogWarning("Invalid user ID format");
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                var notification = await _notificationService.CreateNotificationAsync(dto);
+                _logger.LogInformation($"Successfully created notification for user {dto.UserId}");
+                
+                return Ok(new { success = true, data = notification });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error creating notification for user {dto.UserId}");
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
     }
 }

@@ -222,5 +222,78 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { success = false, error = ex.Message });
             }
         }
+
+        [HttpPut("inbox/read-all")]
+        public async Task<IActionResult> MarkAllInboxAsRead()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                var success = await _messageService.MarkAllInboxAsReadAsync(parsedUserId);
+                if (!success)
+                {
+                    return BadRequest(new { success = false, error = "حدث خطأ أثناء تحديث حالة القراءة" });
+                }
+
+                return Ok(new { success = true, message = "تم تحديث حالة القراءة لجميع الرسائل بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet("inbox/unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                var count = await _messageService.GetUnreadCountAsync(parsedUserId);
+                return Ok(new { success = true, data = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
     }
 }

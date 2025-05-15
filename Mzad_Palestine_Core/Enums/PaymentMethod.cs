@@ -10,6 +10,7 @@ namespace Mzad_Palestine_Core.Enums
     {
         CreditCard,
         Paypal,
-        BankTransfer//الدفع عند الاستلام
+        BankTransfer,
+        CashOnDelivery
     }
 }

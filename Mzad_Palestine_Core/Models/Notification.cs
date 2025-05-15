@@ -1,4 +1,5 @@
 ﻿using Mzad_Palestine_Core.Enums;
+using Mzad_Palestine_Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,13 @@ namespace Mzad_Palestine_Core.Models
         public string Message { get; set; }
         public NotificationType Type { get; set; }
         public NotificationStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        private DateTime _createdAt;
+        public DateTime CreatedAt
+        {
+            get => _createdAt.ToPalestineTime();
+            set => _createdAt = value.ToUtcFromPalestine();
+        }
 
         // الملاحة
         public User User { get; set; }

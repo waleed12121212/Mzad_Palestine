@@ -103,5 +103,30 @@ namespace Mzad_Palestine_Infrastructure.Services
             await _repository.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> MarkAllInboxAsReadAsync(int userId)
+        {
+            try
+            {
+                var messages = await _repository.FindAsync(m => m.ReceiverId == userId && !m.IsRead);
+                foreach (var message in messages)
+                {
+                    message.IsRead = true;
+                    _repository.Update(message);
+                }
+                await _repository.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<int> GetUnreadCountAsync(int userId)
+        {
+            var messages = await _repository.FindAsync(m => m.ReceiverId == userId && !m.IsRead);
+            return messages.Count();
+        }
     }
 }

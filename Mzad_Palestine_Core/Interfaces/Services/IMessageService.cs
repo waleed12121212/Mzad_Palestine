@@ -14,5 +14,7 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<IEnumerable<MessageDto>> GetSentMessagesAsync(int userId);
         Task<IEnumerable<MessageDto>> GetConversationAsync(int currentUserId, int otherUserId);
         Task<bool> MarkAsReadAsync(int messageId, int userId);
+        Task<bool> MarkAllInboxAsReadAsync(int userId);
+        Task<int> GetUnreadCountAsync(int userId);
     }
 }

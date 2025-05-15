@@ -8,8 +8,12 @@ namespace Mzad_Palestine_Core.Enums
 {
     public enum NotificationType
     {
-        Bid,
-        Payment,
-        General
+        General,
+        BidPlaced,
+        BidOutbid,
+        AuctionEnded,
+        AuctionWon,
+        AuctionCancelled,
+        MassageReceived
     }
 }
