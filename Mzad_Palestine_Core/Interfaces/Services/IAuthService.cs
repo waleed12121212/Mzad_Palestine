@@ -35,5 +35,8 @@ namespace Mzad_Palestine_Core.Interfaces.Services
 
         // التحقق من رمز تأكيد البريد الإلكتروني
         Task<string> VerifyEmailWithCodeAsync(string email, string code);
+
+        // إعادة تعيين كلمة المرور باستخدام رمز التحقق
+        Task<string> ResetPasswordWithCodeAsync(string email, string verificationCode, string newPassword);
     }
 }

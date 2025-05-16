@@ -224,6 +224,20 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
+        [HttpPost("reset-password-with-code")]
+        public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeDto request)
+        {
+            try
+            {
+                var result = await _authService.ResetPasswordWithCodeAsync(request.Email, request.VerificationCode, request.NewPassword);
+                return Ok(new { message = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         //[HttpGet]
         //public async Task<IActionResult> GetAll( )
         //{

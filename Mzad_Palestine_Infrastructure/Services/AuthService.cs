@@ -137,5 +137,17 @@ namespace Mzad_Palestine_Infrastructure.Services
                 return $"حدث خطأ أثناء التحقق من رمز التأكيد: {ex.Message}";
             }
         }
+
+        public async Task<string> ResetPasswordWithCodeAsync(string email, string verificationCode, string newPassword)
+        {
+            try
+            {
+                return await _authRepository.ResetPasswordWithCodeAsync(email, verificationCode, newPassword);
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء إعادة تعيين كلمة المرور: {ex.Message}";
+            }
+        }
     }
 }

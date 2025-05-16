@@ -451,5 +451,46 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 return $"حدث خطأ أثناء تأكيد البريد الإلكتروني: {ex.Message}";
             }
         }
+
+        public async Task<string> ResetPasswordWithCodeAsync(string email, string verificationCode, string newPassword)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                    return "المستخدم غير موجود";
+
+                if (!_verificationCodes.ContainsKey(email))
+                    return "لم يتم إرسال رمز تحقق لهذا البريد الإلكتروني";
+
+                var (storedCode, expiry) = _verificationCodes[email];
+                
+                if (DateTime.UtcNow > expiry)
+                {
+                    _verificationCodes.Remove(email);
+                    return "انتهت صلاحية رمز التحقق";
+                }
+
+                if (verificationCode != storedCode)
+                    return "رمز التحقق غير صحيح";
+
+                // Generate password reset token
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                
+                // Reset the password
+                var result = await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
+                if (!result.Succeeded)
+                    return string.Join(", ", result.Errors.Select(e => e.Description));
+
+                // Remove the verification code after successful password reset
+                _verificationCodes.Remove(email);
+
+                return "تم إعادة تعيين كلمة المرور بنجاح";
+            }
+            catch (Exception ex)
+            {
+                return $"حدث خطأ أثناء إعادة تعيين كلمة المرور: {ex.Message}";
+            }
+        }
     }
 }
