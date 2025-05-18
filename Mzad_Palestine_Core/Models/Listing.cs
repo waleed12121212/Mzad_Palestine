@@ -40,7 +40,7 @@ namespace Mzad_Palestine_Core.Models
         public virtual ICollection<ListingTag> ListingTags { get; set; }
         public virtual ICollection<Watchlist> Watchlists { get; set; }
 
-        public Listing()
+        public Listing( )
         {
             Bids = new HashSet<Bid>();
             Reviews = new HashSet<Review>();

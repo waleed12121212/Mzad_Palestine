@@ -258,5 +258,34 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { success = false, error = ex.Message });
             }
         }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllSupport()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userRole = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userRole) || userRole != "Admin")
+                {
+                    return Unauthorized(new { success = false, error = "غير مصرح لك بالوصول إلى هذه البيانات" });
+                }
+
+                var tickets = await _ticketService.GetAllAsync();
+                return Ok(new { success = true, data = tickets });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
     }
 }

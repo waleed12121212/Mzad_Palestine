@@ -102,7 +102,7 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .IsRequired()
                       .HasMaxLength(255);
                 entity.Property(c => c.Description)
-                      .HasColumnType("text");
+                      .HasColumnType("nvarchar(max)");
                 entity.Property(c => c.ImageUrl)
                       .HasMaxLength(255);
                 // العلاقة مع نفسها (فئة فرعية)
