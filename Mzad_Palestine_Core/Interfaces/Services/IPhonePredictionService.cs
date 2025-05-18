@@ -1,11 +1,11 @@
-using Mzad_Palestine_Core.DTO_s.Phone;
+using Mzad_Palestine_Core.Models;
 using System.Threading.Tasks;
 
 namespace Mzad_Palestine_Core.Interfaces.Services
 {
     public interface IPhonePredictionService
     {
-        Task<string> PredictPrice(PhonePredictionRequestDto request);
-        Task<object> GetPredictionMetadata();
+        Task<double> PredictPrice(Phone phone);
+        Task<Phone> SavePhoneSpecs(Phone phone);
     }
 } 

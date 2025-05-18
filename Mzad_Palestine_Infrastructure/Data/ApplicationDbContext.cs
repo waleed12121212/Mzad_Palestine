@@ -36,6 +36,7 @@ namespace Mzad_Palestine_Infrastructure.Data
         public DbSet<CustomerSupportTicket> CustomerSupportTickets { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Phone> Phones { get; set; }
 
         // Override لـ OnModelCreating لتكوين العلاقات والقيود باستخدام Fluent API
         protected override void OnModelCreating(ModelBuilder modelBuilder)

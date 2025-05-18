@@ -1,0 +1,6 @@
+@PhonePricePrediction_HostAddress = http://localhost:5288
+
+GET {{PhonePricePrediction_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

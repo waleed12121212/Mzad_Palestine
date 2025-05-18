@@ -69,17 +69,10 @@ public class PhonePredictionController : ControllerBase
     [HttpPost("predict")]
     [ProducesResponseType(typeof(PredictionResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> Predict([FromBody] PhoneSpecs specs)
+    public IActionResult Predict([FromBody] PhoneSpecs specs)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _logger.LogInformation($"تم استلام طلب تنبؤ للجهاز: {specs.DeviceName}");
-
             // تحويل المواصفات إلى قاموس
             var phoneSpecs = new Dictionary<string, object>
             {
@@ -93,37 +86,25 @@ public class PhonePredictionController : ControllerBase
                 { "charging_speed", specs.ChargingSpeed }
             };
 
-            _logger.LogInformation($"المواصفات المحولة: {JsonSerializer.Serialize(phoneSpecs)}");
+            // حساب السعر مباشرة
+            double base_price = 1000;
+            double price = (
+                specs.BatteryCapacity * 0.1 +
+                specs.DisplaySize * 100 +
+                specs.Storage * 0.5 +
+                specs.Ram * 50 +
+                specs.RefreshRate * 2 +
+                int.Parse(specs.FrontCamera.Replace("MP", "")) * 10 +
+                int.Parse(specs.RearCamera.Split('+')[0].Replace("MP", "").Trim()) * 5 +
+                specs.ChargingSpeed * 3 +
+                base_price
+            );
 
-            // تشغيل نموذج Python
-            using (Py.GIL())
-            {
-                dynamic sys = Py.Import("sys");
-                sys.path.append(Path.GetDirectoryName(_pythonScriptPath));
-                
-                dynamic phone_prediction = Py.Import("phone_prediction_model");
-                dynamic result = phone_prediction.predict_price(phoneSpecs);
-
-                _logger.LogInformation($"تم التنبؤ بالسعر: {result}");
-
-                return Ok(new PredictionResponse
-                {
-                    DeviceName = specs.DeviceName,
-                    PredictedPrice = result,
-                    Currency = "USD",
-                    Timestamp = DateTime.UtcNow
-                });
-            }
+            return Ok(new { price = Math.Round(price, 2) });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "حدث خطأ أثناء التنبؤ بالسعر");
-            return StatusCode(500, new ErrorResponse
-            {
-                StatusCode = 500,
-                Message = "Internal Server Error. Please try again later.",
-                Detailed = ex.Message
-            });
+            return BadRequest(new { error = ex.Message });
         }
     }
 }
