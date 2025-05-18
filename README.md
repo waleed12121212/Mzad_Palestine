@@ -166,3 +166,60 @@ For help and inquiries, please:
 ## شكر خاص | Special Thanks
 شكر خاص لجميع المساهمين والداعمين لهذا المشروع.
 Special thanks to all contributors and supporters of this project.
+
+# نموذج التنبؤ بأسعار الهواتف المحمولة
+
+هذا المشروع يستخدم خوارزمية KNN للتنبؤ بأسعار الهواتف المحمولة بناءً على مواصفاتها.
+
+## المتطلبات
+
+- Python 3.6 أو أحدث
+- المكتبات المذكورة في ملف requirements.txt
+
+## التثبيت
+
+1. قم بتثبيت المتطلبات:
+```bash
+pip install -r requirements.txt
+```
+
+2. تأكد من وجود ملف البيانات train.csv في نفس المجلد
+
+## الاستخدام
+
+1. قم بتشغيل النموذج:
+```bash
+python mobile_price_prediction.py
+```
+
+2. سيتم عرض:
+   - دقة النموذج
+   - تقرير التصنيف
+   - مصفوفة الارتباك
+
+3. سيتم حفظ النموذج المدرب في ملف mobile_price_model.pkl
+
+## هيكل البيانات
+
+يجب أن يحتوي ملف البيانات train.csv على الأعمدة التالية:
+- battery_power: قوة البطارية
+- blue: دعم البلوتوث
+- clock_speed: سرعة المعالج
+- dual_sim: دعم الشريحتين
+- fc: كاميرا أمامية
+- four_g: دعم 4G
+- int_memory: الذاكرة الداخلية
+- m_dep: سمك الهاتف
+- mobile_wt: وزن الهاتف
+- n_cores: عدد النوى
+- pc: الكاميرا الرئيسية
+- px_height: دقة الشاشة (الارتفاع)
+- px_width: دقة الشاشة (العرض)
+- ram: الذاكرة العشوائية
+- sc_h: ارتفاع الشاشة
+- sc_w: عرض الشاشة
+- talk_time: وقت التحدث
+- three_g: دعم 3G
+- touch_screen: شاشة لمس
+- wifi: دعم الواي فاي
+- price_range: نطاق السعر (الهدف)
