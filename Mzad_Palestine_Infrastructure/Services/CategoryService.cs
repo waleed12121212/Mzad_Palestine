@@ -4,6 +4,7 @@ using Mzad_Palestine_Core.DTOs.Category;
 using Mzad_Palestine_Core.Interfaces.Services;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Core.Interfaces.Common;
+using Mzad_Palestine_Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -185,6 +186,53 @@ namespace Mzad_Palestine_Infrastructure.Services
             _unitOfWork.Categories.Update(category);
             var result = await _unitOfWork.CompleteAsync();
             return result > 0;
+        }
+
+        public async Task<IEnumerable<CategoryWithCountsDto>> GetAllWithCountsAsync()
+        {
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+            var result = new List<CategoryWithCountsDto>();
+            foreach (var category in categories)
+            {
+                var listings = await _unitOfWork.Listings.FindAsync(l => l.CategoryId == category.Id);
+                var listingIds = listings.Select(l => l.ListingId).ToList();
+                var auctionIds = listings.Where(l => l.Status == ListingStatus.Active && l.StartingPrice > 0)
+                    .Select(l => l.ListingId)
+                    .ToList();
+
+                result.Add(new CategoryWithCountsDto
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    ListingCount = listingIds.Count(),
+                    AuctionCount = auctionIds.Count(),
+                    ListingIds = listingIds,
+                    AuctionIds = auctionIds
+                });
+            }
+            return result;
+        }
+
+        public async Task<CategoryWithCountsDto> GetByIdWithCountsAsync(int id)
+        {
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+            if (category == null) return null;
+
+            var listings = await _unitOfWork.Listings.FindAsync(l => l.CategoryId == category.Id);
+            var listingIds = listings.Select(l => l.ListingId).ToList();
+            var auctionIds = listings.Where(l => l.Status == ListingStatus.Active && l.StartingPrice > 0)
+                .Select(l => l.ListingId)
+                .ToList();
+
+            return new CategoryWithCountsDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ListingCount = listingIds.Count(),
+                AuctionCount = auctionIds.Count(),
+                ListingIds = listingIds,
+                AuctionIds = auctionIds
+            };
         }
     }
 }

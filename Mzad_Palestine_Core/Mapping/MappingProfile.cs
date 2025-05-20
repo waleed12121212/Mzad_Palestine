@@ -36,17 +36,26 @@ namespace Mzad_Palestine_Core.Mapping
             // No need to ignore Id as it will be set by Identity framework
 
             // Listing mapping
-            CreateMap<Listing , ListingDto>();
-            CreateMap<CreateListingDto , Listing>();
+            CreateMap<Listing, ListingDto>()
+                .ForMember(dest => dest.ListingId, opt => opt.MapFrom(src => src.ListingId))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : null))
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images != null ? src.Images.Select(i => i.ImageUrl).ToList() : new List<string>()));
+            CreateMap<CreateListingDto, Listing>();
 
             // Auction mapping
             CreateMap<Auction , AuctionDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.AuctionId));
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.AuctionId))
+                .ForMember(dest => dest.WinnerId, opt => opt.MapFrom(src => src.WinnerId))
+                .ForMember(dest => dest.CategoryName , opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
+                .ForMember(dest => dest.Images , opt => opt.MapFrom(src => src.Images != null ? src.Images.Select(i => i.ImageUrl).ToList() : null));
             CreateMap<CreateAuctionDto , Auction>();
 
             // Bid mapping
-            CreateMap<Bid , BidDto>()
-                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.BidId));
+            CreateMap<Bid , Mzad_Palestine_Core.DTO_s.Auction.BidDto>()
+                .ForMember(dest => dest.Id , opt => opt.MapFrom(src => src.BidId))
+                .ForMember(dest => dest.UserName , opt => opt.MapFrom(src => src.User != null ? src.User.UserName : null))
+                .ForMember(dest => dest.IsWinningBid , opt => opt.MapFrom(src => src.Auction != null && src.Auction.WinnerId == src.UserId));
             CreateMap<CreateBidDto , Bid>();
 
             // Payment mapping

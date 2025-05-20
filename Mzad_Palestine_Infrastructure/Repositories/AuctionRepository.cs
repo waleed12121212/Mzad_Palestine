@@ -25,10 +25,23 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
         public async Task CloseAuctionAsync(int auctionId)
         {
-            var auction = await _context.Auctions.FindAsync(auctionId);
+            var auction = await _context.Auctions
+                .Include(a => a.Bids)
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
             if (auction != null)
             {
-                auction.Status = AuctionStatus.Closed;
+                // تحديد أعلى وأحدث مزايدة
+                var highestBid = auction.Bids?
+                    .OrderByDescending(b => b.BidAmount)
+                    .ThenByDescending(b => b.BidTime)
+                    .FirstOrDefault();
+                if (highestBid != null)
+                {
+                    auction.WinnerId = highestBid.UserId;
+                }
+
+                auction.Status = AuctionStatus.Closed.ToString();
                 await _context.SaveChangesAsync();
             }
         }
@@ -45,141 +58,152 @@ namespace Mzad_Palestine_Infrastructure.Repositories
 
         public async Task<IEnumerable<Auction>> GetActiveAsync()
         {
-            return await _context.Auctions
-                .Where(a => a.Status == AuctionStatus.Open && a.EndTime > DateTime.UtcNow)
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
-                .Include(a => a.Bids)
-                .Include(a => a.Winner)
-                .ToListAsync();
+            return await GetOpenAuctionsAsync();
         }
 
         public async Task<Auction> GetAuctionWithBidsAsync(int auctionId)
         {
-            try
-            {
-                var auction = await _context.Auctions
-                    .Include(a => a.Bids)
-                        .ThenInclude(b => b.User)
-                    .Include(a => a.Listing)
-                        .ThenInclude(l => l.Category)
-                    .Include(a => a.Winner)
-                    .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
-
-                if (auction == null)
-                {
-                    _logger.LogWarning($"Auction {auctionId} not found");
-                    return null;
-                }
-
-                _logger.LogInformation($"Retrieved auction {auctionId} with {auction.Bids?.Count ?? 0} bids");
-                
-                // Verify bid count matches database
-                var directBidCount = await _context.Bids
-                    .Where(b => b.AuctionId == auctionId)
-                    .CountAsync();
-                    
-                if (directBidCount != (auction.Bids?.Count ?? 0))
-                {
-                    _logger.LogWarning($"Bid count mismatch for auction {auctionId}. EF Count: {auction.Bids?.Count ?? 0}, Direct DB Count: {directBidCount}");
-                }
-
-                return auction;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving auction {auctionId} with bids");
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<AuctionResponseDto>> GetByUserIdAsync(int userId)
-        {
-            return await _context.Auctions
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
+            var auction = await _context.Auctions
+                .Include(a => a.Category)
                 .Include(a => a.Bids)
                 .Include(a => a.Winner)
+                .Include(a => a.Images)
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+            if (auction == null)
+                return null;
+
+            var now = DateTime.UtcNow;
+            bool updated = false;
+
+            if (auction.Status == "Pending" && now >= auction.StartDate && now < auction.EndDate)
+            {
+                auction.Status = "Open";
+                updated = true;
+            }
+            else if (auction.Status != "Closed" && now >= auction.EndDate)
+            {
+                auction.Status = "Closed";
+                updated = true;
+            }
+
+            if (updated)
+            {
+                _context.Entry(auction).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+
+            return auction;
+        }
+
+        public async Task<IEnumerable<Auction>> GetByUserIdAsync(int userId)
+        {
+            return await _context.Auctions
+                .Include(a => a.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
+                .Include(a => a.Images)
                 .Where(a => a.UserId == userId)
-                .Select(a => new AuctionResponseDto
-                {
-                    AuctionId = a.AuctionId,
-                    ListingId = a.ListingId,
-                    Name = a.Name,
-                    CategoryName = a.Listing.Category.Name,
-                    CategoryId = a.Listing.CategoryId,
-                    ReservePrice = a.ReservePrice,
-                    CurrentBid = a.CurrentBid,
-                    BidIncrement = a.BidIncrement,
-                    StartTime = a.StartTime,
-                    EndTime = a.EndTime,
-                    ImageUrl = a.ImageUrl,
-                    Status = a.Status,
-                    BidsCount = a.Bids.Count,
-                    WinnerName = a.Winner != null ? a.Winner.UserName : null
-                })
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Auction>> GetClosedAuctionsAsync()
         {
-            return await _context.Auctions
-                .Where(a => a.Status == AuctionStatus.Closed)
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
+            var auctions = await _context.Auctions
+                .Include(a => a.Category)
                 .Include(a => a.Bids)
                 .Include(a => a.Winner)
+                .Include(a => a.Images)
                 .ToListAsync();
+
+            var now = DateTime.UtcNow;
+            bool updated = false;
+
+            foreach (var auction in auctions)
+            {
+                if (auction.Status != "Closed" && now >= auction.EndDate)
+                {
+                    auction.Status = "Closed";
+                    updated = true;
+                }
+                else if (auction.Status == "Pending" && now >= auction.StartDate && now < auction.EndDate)
+                {
+                    auction.Status = "Open";
+                    updated = true;
+                }
+            }
+
+            if (updated)
+                await _context.SaveChangesAsync();
+
+            return auctions.Where(a => a.Status == "Closed").ToList();
         }
 
         public async Task<DateTime?> GetEndTimeAsync(int auctionId)
         {
             var auction = await _context.Auctions.FindAsync(auctionId);
-            return auction?.EndTime;
+            return auction?.EndDate;
         }
 
         public async Task<IEnumerable<Auction>> GetOpenAuctionsAsync()
         {
-            return await _context.Auctions
-                .Where(a => a.Status == AuctionStatus.Open)
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
+            var auctions = await _context.Auctions
+                .Include(a => a.Category)
                 .Include(a => a.Bids)
                 .Include(a => a.Winner)
+                .Include(a => a.Images)
                 .ToListAsync();
+
+            var now = DateTime.UtcNow;
+            bool updated = false;
+
+            foreach (var auction in auctions)
+            {
+                if (auction.Status == "Pending" && now >= auction.StartDate && now < auction.EndDate)
+                {
+                    auction.Status = "Open";
+                    updated = true;
+                }
+                else if (auction.Status != "Closed" && now >= auction.EndDate)
+                {
+                    auction.Status = "Closed";
+                    updated = true;
+                }
+            }
+
+            if (updated)
+                await _context.SaveChangesAsync();
+
+            return auctions.Where(a => a.Status == "Open").ToList();
         }
 
         public async Task<bool> IsAuctionOwnerAsync(int auctionId, int userId)
         {
             var auction = await _context.Auctions
-                .Include(a => a.Listing)
                 .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
             
-            return auction?.Listing.UserId == userId;
+            return auction?.UserId == userId;
         }
 
-        public async Task<IEnumerable<AuctionResponseDto>> SearchAsync(AuctionSearchDto searchDto)
+        public async Task<IEnumerable<Auction>> SearchAsync(AuctionSearchDto searchDto)
         {
             var query = _context.Auctions
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
+                .Include(a => a.Category)
                 .Include(a => a.Bids)
                 .Include(a => a.Winner)
+                .Include(a => a.Images)
                 .AsQueryable();
 
-            // البحث بالكلمة المفتاحية في اسم المزاد
             if (!string.IsNullOrEmpty(searchDto.Keyword))
             {
-                query = query.Where(a => a.Name.ToLower().Contains(searchDto.Keyword.ToLower()));
+                query = query.Where(a => a.Title.ToLower().Contains(searchDto.Keyword.ToLower()));
             }
 
-            // البحث بالفئة
             if (!string.IsNullOrEmpty(searchDto.Category))
             {
-                query = query.Where(a => a.Listing.Category.Name.ToLower().Contains(searchDto.Category.ToLower()));
+                query = query.Where(a => a.Category.Name.ToLower().Contains(searchDto.Category.ToLower()));
             }
 
-            // البحث بالسعر
             if (searchDto.MinPrice.HasValue)
             {
                 query = query.Where(a => a.ReservePrice >= searchDto.MinPrice.Value || 
@@ -192,61 +216,33 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                                       (a.CurrentBid > 0 && a.CurrentBid <= searchDto.MaxPrice.Value));
             }
 
-            // البحث بالتاريخ
             if (searchDto.StartDate.HasValue)
             {
-                var startDate = searchDto.StartDate.Value.Date;
-                query = query.Where(a => a.StartTime.Date >= startDate);
+                query = query.Where(a => a.StartDate >= searchDto.StartDate.Value);
             }
 
             if (searchDto.EndDate.HasValue)
             {
-                var endDate = searchDto.EndDate.Value.Date.AddDays(1).AddSeconds(-1);
-                query = query.Where(a => a.EndTime <= endDate);
+                query = query.Where(a => a.EndDate <= searchDto.EndDate.Value);
             }
 
-            // البحث بحالة المزاد
             if (searchDto.Status.HasValue)
             {
-                query = query.Where(a => a.Status == searchDto.Status.Value);
+                query = query.Where(a => a.Status == searchDto.Status.Value.ToString());
             }
 
-            // البحث بمعرف المستخدم
             if (searchDto.UserId.HasValue)
             {
                 query = query.Where(a => a.UserId == searchDto.UserId.Value);
             }
 
-            return await query
-                .Select(a => new AuctionResponseDto
-                {
-                    AuctionId = a.AuctionId,
-                    Name = a.Name,
-                    CategoryName = a.Listing.Category.Name,
-                    ReservePrice = a.ReservePrice,
-                    CurrentBid = a.CurrentBid,
-                    BidIncrement = a.BidIncrement,
-                    StartTime = a.StartTime,
-                    EndTime = a.EndTime,
-                    ImageUrl = a.ImageUrl,
-                    Status = a.Status,
-                    BidsCount = a.Bids.Count,
-                    WinnerName = a.Winner != null ? a.Winner.UserName : null
-                })
-                .ToListAsync();
-        }
-
-        public async Task UpdateAsync(Auction auction)
-        {
-            _context.Entry(auction).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            return await query.ToListAsync();
         }
 
         public IQueryable<Auction> GetQueryable()
         {
             return _context.Auctions
-                .Include(a => a.Listing)
-                    .ThenInclude(l => l.Category)
+                .Include(a => a.Category)
                 .Include(a => a.User)
                 .Include(a => a.Winner)
                 .Include(a => a.Bids)
@@ -261,9 +257,147 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             base.Update(entity);
         }
 
+        public async Task UpdateAsync(Auction auction)
+        {
+            _context.Entry(auction).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Auction> GetByNameAsync(string name)
         {
             throw new NotImplementedException("Auctions cannot be searched by name. Please use other search criteria such as ID or associated listing.");
+        }
+
+        public async Task<Auction> GetByIdAsync(int auctionId)
+        {
+            var auction = await _context.Auctions
+                .Include(a => a.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+            if (auction == null)
+                return null;
+
+            var now = DateTime.UtcNow;
+            bool updated = false;
+
+            if (auction.Status == "Pending" && now >= auction.StartDate && now < auction.EndDate)
+            {
+                auction.Status = "Open";
+                updated = true;
+            }
+            else if (auction.Status != "Closed" && now >= auction.EndDate)
+            {
+                auction.Status = "Closed";
+                updated = true;
+            }
+
+            if (updated)
+            {
+                _context.Entry(auction).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+
+            return auction;
+        }
+
+        public async Task<bool> ExistsAsync(int auctionId)
+        {
+            return await _context.Auctions.AnyAsync(a => a.AuctionId == auctionId);
+        }
+
+        public async Task<Auction> GetByIdWithDetailsAsync(int auctionId)
+        {
+            var auction = await _context.Auctions
+                .Include(a => a.Category)
+                .Include(a => a.Bids)
+                    .ThenInclude(b => b.User)
+                .Include(a => a.Winner)
+                .Include(a => a.Images)
+                .Include(a => a.AutoBids)
+                .Include(a => a.Payments)
+                .Include(a => a.Disputes)
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+
+            if (auction == null)
+                return null;
+
+            var now = DateTime.UtcNow;
+            bool updated = false;
+
+            if (auction.Status == "Pending" && now >= auction.StartDate && now < auction.EndDate)
+            {
+                auction.Status = "Open";
+                updated = true;
+            }
+            else if (auction.Status != "Closed" && now >= auction.EndDate)
+            {
+                auction.Status = "Closed";
+                updated = true;
+            }
+
+            if (updated)
+            {
+                _context.Entry(auction).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+
+            return auction;
+        }
+
+        public async Task AddImageAsync(AuctionImage image)
+        {
+            await _context.AuctionImages.AddAsync(image);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveImagesAsync(int auctionId)
+        {
+            var images = await _context.AuctionImages
+                .Where(ai => ai.AuctionId == auctionId)
+                .ToListAsync();
+            
+            _context.AuctionImages.RemoveRange(images);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Auction>> GetByCategoryAsync(int categoryId)
+        {
+            return await _context.Auctions
+                .Include(a => a.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
+                .Include(a => a.Images)
+                .Where(a => a.CategoryId == categoryId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Auction>> GetByUserAsync(int userId)
+        {
+            return await _context.Auctions
+                .Include(a => a.Category)
+                .Include(a => a.Bids)
+                .Include(a => a.Winner)
+                .Include(a => a.Images)
+                .Where(a => a.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<Category> GetCategoryAsync(int auctionId)
+        {
+            var auction = await _context.Auctions
+                .Include(a => a.Category)
+                .FirstOrDefaultAsync(a => a.AuctionId == auctionId);
+            
+            return auction?.Category;
+        }
+
+        public async Task<IEnumerable<AuctionImage>> GetAuctionImagesAsync(int auctionId)
+        {
+            return await _context.AuctionImages
+                .Where(ai => ai.AuctionId == auctionId)
+                .ToListAsync();
         }
     }
 }

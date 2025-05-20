@@ -17,5 +17,6 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<IEnumerable<ListingDto>> GetActiveAsync();
         Task<ListingDto> UpdateAsync(int id, UpdateListingDto dto);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<ListingDto>> SearchListingsAsync(ListingSearchDto searchDto);
     }
 }

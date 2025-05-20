@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Mzad_Palestine_Core.DTOs;
+using Mzad_Palestine_Core.DTOs.Report;
 using Mzad_Palestine_Core.Models;
 using Mzad_Palestine_Core.Interfaces.Services;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mzad_Palestine_Infrastructure.Repositories;
 using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_Core.Interfaces.Common;
 
 namespace Mzad_Palestine_Infrastructure.Services
 {
@@ -16,15 +18,18 @@ namespace Mzad_Palestine_Infrastructure.Services
         private readonly IReportRepository _reportRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<ReportService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
         public ReportService(
             IReportRepository reportRepository,
             IMapper mapper,
-            ILogger<ReportService> logger)
+            ILogger<ReportService> logger,
+            IUnitOfWork unitOfWork)
         {
             _reportRepository = reportRepository;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<ReportDto>> GetAllAsync()
@@ -68,24 +73,27 @@ namespace Mzad_Palestine_Infrastructure.Services
                 if (report.ReporterId <= 0)
                     throw new ArgumentException("معرف المبلغ غير صالح", nameof(report));
 
-                if (report.ReportedListingId <= 0)
+                if (report.ReportType == "Listing" && (!report.ReportedListingId.HasValue || report.ReportedListingId <= 0))
                     throw new ArgumentException("معرف الإعلان المبلغ عنه غير صالح", nameof(report));
 
+                if (report.ReportType == "Auction" && (!report.ReportedAuctionId.HasValue || report.ReportedAuctionId <= 0))
+                    throw new ArgumentException("معرف المزاد المبلغ عنه غير صالح", nameof(report));
+
+                report.Resolution = "قيد المراجعة";
+
                 _logger.LogInformation(
-                    "إنشاء تقرير جديد. معرف المبلغ: {ReporterId}، معرف الإعلان: {ListingId}، السبب: {Reason}",
+                    "إنشاء تقرير جديد. معرف المبلغ: {ReporterId}، نوع التقرير: {ReportType}، السبب: {Reason}",
                     report.ReporterId,
-                    report.ReportedListingId,
+                    report.ReportType,
                     report.Reason);
 
-                report.StatusId = 0; // حالة "قيد الانتظار"
+                report.Status = "Pending";
                 report.CreatedAt = DateTime.UtcNow;
 
-                var createdReport = await _reportRepository.CreateAsync(report);
-                
-                if (createdReport == null)
-                    throw new Exception("فشل إنشاء التقرير - أعاد المستودع قيمة فارغة");
+                await _unitOfWork.Reports.AddAsync(report);
+                await _unitOfWork.CompleteAsync();
 
-                var mappedReport = _mapper.Map<ReportDto>(createdReport);
+                var mappedReport = _mapper.Map<ReportDto>(report);
                 
                 _logger.LogInformation(
                     "تم إنشاء التقرير بنجاح بمعرف: {ReportId}",
@@ -100,7 +108,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             }
         }
 
-        public async Task<ReportDto> UpdateAsync(int id, UpdateReportDto updateReportDto)
+        public async Task<ReportDto> UpdateAsync(int id, Mzad_Palestine_Core.DTOs.Report.UpdateReportDto updateReportDto)
         {
             try
             {
@@ -109,14 +117,15 @@ namespace Mzad_Palestine_Infrastructure.Services
                     throw new KeyNotFoundException($"Report with ID {id} not found");
 
                 existingReport.Reason = updateReportDto.Reason;
-                if (updateReportDto.ResolvedBy.HasValue)
-                {
-                    existingReport.ResolvedBy = updateReportDto.ResolvedBy;
-                    existingReport.StatusId = 1; // "Resolved" status (1)
-                }
+                existingReport.Status = updateReportDto.Status;
+                existingReport.Resolution = updateReportDto.Resolution;
+                existingReport.ResolvedBy = updateReportDto.ResolvedBy;
+                existingReport.ResolvedAt = DateTime.UtcNow;
+                existingReport.UpdatedAt = DateTime.UtcNow;
 
-                var updatedReport = await _reportRepository.UpdateAsync(existingReport);
-                return _mapper.Map<ReportDto>(updatedReport);
+                _reportRepository.Update(existingReport);
+                await _unitOfWork.CompleteAsync();
+                return _mapper.Map<ReportDto>(existingReport);
             }
             catch (Exception ex)
             {
@@ -129,13 +138,29 @@ namespace Mzad_Palestine_Infrastructure.Services
         {
             try
             {
-                return await _reportRepository.DeleteAsync(id);
+                var report = await _reportRepository.GetByIdAsync(id);
+                if (report == null)
+                    return false;
+
+                await _reportRepository.DeleteAsync(report);
+                await _unitOfWork.CompleteAsync();
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting report with ID: {Id}", id);
                 throw;
             }
+        }
+
+        public async Task<IEnumerable<Report>> GetByReporterIdAsync(int reporterId)
+        {
+            return await _reportRepository.GetByReporterIdAsync(reporterId);
+        }
+
+        public async Task<IEnumerable<Report>> GetByStatusAsync(string status)
+        {
+            return await _reportRepository.GetByStatusAsync(status);
         }
     }
 }

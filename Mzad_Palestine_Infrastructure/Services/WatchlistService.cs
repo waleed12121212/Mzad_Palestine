@@ -15,7 +15,20 @@ namespace Mzad_Palestine_Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<WatchlistDto> AddAsync(int userId, int listingId)
+        public async Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId)
+        {
+            var watchlists = await _unitOfWork.Watchlists.FindAsync(w => w.UserId == userId);
+            return watchlists.Select(w => new WatchlistDto
+            {
+                Id = w.WatchlistId,
+                UserId = w.UserId,
+                ListingId = w.ListingId,
+                AuctionId = w.AuctionId,
+                AddedAt = w.AddedAt
+            });
+        }
+
+        public async Task<WatchlistDto> AddListingAsync(int userId, int listingId)
         {
             // Check if the item is already in the watchlist
             var existingWatchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
@@ -23,7 +36,7 @@ namespace Mzad_Palestine_Infrastructure.Services
 
             if (existingWatchlist != null)
             {
-                throw new Exception("هذا المنتج موجود بالفعل في المفضلة");
+                throw new Exception("هذه القائمة موجودة بالفعل في المفضلة");
             }
 
             var watchlist = new Watchlist
@@ -45,55 +58,62 @@ namespace Mzad_Palestine_Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId)
+        public async Task<WatchlistDto> AddAuctionAsync(int userId, int auctionId)
         {
-            var watchlists = await _unitOfWork.Watchlists.FindAsync(w => w.UserId == userId);
-            return watchlists.Select(w => new WatchlistDto
-            {
-                Id = w.WatchlistId,
-                UserId = w.UserId,
-                ListingId = w.ListingId,
-                AddedAt = w.AddedAt
-            });
-        }
+            // Check if the item is already in the watchlist
+            var existingWatchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
+                w.UserId == userId && w.AuctionId == auctionId)).FirstOrDefault();
 
-        public async Task<Watchlist> AddToWatchlistAsync(CreateWatchlistDto dto)
-        {
+            if (existingWatchlist != null)
+            {
+                throw new Exception("هذا المزاد موجود بالفعل في المفضلة");
+            }
+
             var watchlist = new Watchlist
             {
-                UserId = dto.UserId ,
-                ListingId = dto.ListingId ,
-
+                UserId = userId,
+                AuctionId = auctionId,
                 AddedAt = DateTime.UtcNow
             };
 
             await _unitOfWork.Watchlists.AddAsync(watchlist);
             await _unitOfWork.CompleteAsync();
-            return watchlist;
+
+            return new WatchlistDto
+            {
+                Id = watchlist.WatchlistId,
+                UserId = watchlist.UserId,
+                AuctionId = watchlist.AuctionId,
+                AddedAt = watchlist.AddedAt
+            };
         }
 
-        public async Task<IEnumerable<Watchlist>> GetUserWatchlistAsync(int userId)
-        {
-            return await _unitOfWork.Watchlists.FindAsync(w => w.UserId == userId);
-        }
-
-        public async Task<bool> IsInWatchlistAsync(int userId , int listingId)
-        {
-            var watchlist = await _unitOfWork.Watchlists.FindAsync(w =>
-                w.UserId == userId && w.ListingId == listingId);
-            return watchlist.Any();
-        }
-
-        public async Task DeleteFromWatchlistAsync(int userId, int listingId)
+        public async Task RemoveListingAsync(int userId, int listingId)
         {
             var watchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
                 w.UserId == userId && w.ListingId == listingId)).FirstOrDefault();
 
-            if (watchlist != null)
+            if (watchlist == null)
             {
-                await _unitOfWork.Watchlists.DeleteAsync(watchlist);
-                await _unitOfWork.CompleteAsync();
+                throw new Exception("هذه القائمة غير موجودة في المفضلة");
             }
+
+            await _unitOfWork.Watchlists.DeleteAsync(watchlist);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public async Task RemoveAuctionAsync(int userId, int auctionId)
+        {
+            var watchlist = (await _unitOfWork.Watchlists.FindAsync(w =>
+                w.UserId == userId && w.AuctionId == auctionId)).FirstOrDefault();
+
+            if (watchlist == null)
+            {
+                throw new Exception("هذا المزاد غير موجود في المفضلة");
+            }
+
+            await _unitOfWork.Watchlists.DeleteAsync(watchlist);
+            await _unitOfWork.CompleteAsync();
         }
     }
 }

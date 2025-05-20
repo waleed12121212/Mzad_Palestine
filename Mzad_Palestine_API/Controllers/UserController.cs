@@ -247,5 +247,37 @@ namespace Mzad_Palestine_API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("profile/{id}")]
+        public async Task<IActionResult> GetUserProfileById(int id)
+        {
+            try
+            {
+                var user = await _userService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound(new { success = false , error = "المستخدم غير موجود" });
+                }
+
+                return Ok(new
+                {
+                    success = true ,
+                    data = new
+                    {
+                        id = user.Id ,
+                        username = user.Username ,
+                        email = user.Email ,
+                        phoneNumber = user.PhoneNumber ,
+                        profilePicture = user.ProfilePicture ,
+                        location = user.Address ,
+                        joinDate = user.CreatedAt
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false , error = ex.Message });
+            }
+        }
     }
 }

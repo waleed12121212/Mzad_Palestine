@@ -1,4 +1,5 @@
 ﻿using Mzad_Palestine_Core.DTOs;
+using Mzad_Palestine_Core.DTOs.Report;
 using Mzad_Palestine_Core.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         /// <param name="id">Report ID</param>
         /// <param name="updateReportDto">Report update data</param>
         /// <returns>Updated report</returns>
-        Task<ReportDto> UpdateAsync(int id, UpdateReportDto updateReportDto);
+        Task<ReportDto> UpdateAsync(int id, DTOs.Report.UpdateReportDto updateReportDto);
 
         /// <summary>
         /// Deletes a report
@@ -41,5 +42,8 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         /// <param name="id">Report ID</param>
         /// <returns>True if deleted, false if not found</returns>
         Task<bool> DeleteAsync(int id);
+
+        Task<IEnumerable<Report>> GetByReporterIdAsync(int reporterId);
+        Task<IEnumerable<Report>> GetByStatusAsync(string status);
     }
 }

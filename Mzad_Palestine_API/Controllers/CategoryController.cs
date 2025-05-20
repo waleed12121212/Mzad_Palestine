@@ -21,11 +21,11 @@ namespace Mzad_Palestine_API.Controllers
 
         [HttpGet]
         [Route("get-all")]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<CategoryWithCountsDto>>> GetAll()
         {
             try
             {
-                var categories = await _categoryService.GetAllAsync();
+                var categories = await _categoryService.GetAllWithCountsAsync();
                 return Ok(new { success = true, data = categories });
             }
             catch (Exception ex)
@@ -36,11 +36,11 @@ namespace Mzad_Palestine_API.Controllers
 
         [HttpGet]
         [Route("get/{id}")]
-        public async Task<ActionResult<CategoryDto>> GetById(int id)
+        public async Task<ActionResult<CategoryWithCountsDto>> GetById(int id)
         {
             try
             {
-                var category = await _categoryService.GetByIdAsync(id);
+                var category = await _categoryService.GetByIdWithCountsAsync(id);
                 if (category == null)
                     return NotFound(new { success = false, error = "التصنيف غير موجود" });
 

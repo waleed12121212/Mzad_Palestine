@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Mzad_Palestine_Core.DTOs.Listing
 {
     public class ListingDto
@@ -5,8 +8,8 @@ namespace Mzad_Palestine_Core.DTOs.Listing
         public int ListingId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string Address { get; set; }
         public decimal Price { get; set; }
-        public decimal StartingPrice { get; set; }
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public int UserId { get; set; }

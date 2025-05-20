@@ -7,28 +7,39 @@ namespace Mzad_Palestine_Core.Validation
     {
         public CreateAuctionDtoValidator()
         {
-            RuleFor(x => x.ListingId)
-                .NotEmpty().WithMessage("Listing ID is required");
-            RuleFor(x => x.Name)
-           .NotEmpty().WithMessage("الاسم مطلوب.")
-           .MaximumLength(100).WithMessage("الاسم يجب ألا يتجاوز 100 حرف.")
-           .MinimumLength(3).WithMessage("الاسم يجب ان يكون اكثر من 3 احرف ");
-            RuleFor(x => x.StartTime)
-                .NotEmpty().WithMessage("Start time is required")
-                .GreaterThan(DateTime.Now).WithMessage("Start time must be in the future");
+            RuleFor(x => x.Title)
+                .NotEmpty().WithMessage("عنوان المزاد مطلوب")
+                .MaximumLength(255).WithMessage("العنوان يجب ألا يتجاوز 255 حرف")
+                .MinimumLength(3).WithMessage("العنوان يجب أن يكون أكثر من 3 أحرف");
 
-            RuleFor(x => x.EndTime)
-                .NotEmpty().WithMessage("End time is required")
-                .GreaterThan(x => x.StartTime).WithMessage("End time must be after start time");
+            RuleFor(x => x.Description)
+                .NotEmpty().WithMessage("وصف المزاد مطلوب")
+                .MaximumLength(2000).WithMessage("الوصف يجب ألا يتجاوز 2000 حرف");
+
+            RuleFor(x => x.Address)
+                .NotEmpty().WithMessage("العنوان مطلوب")
+                .MaximumLength(500).WithMessage("العنوان يجب ألا يتجاوز 500 حرف");
+
+            RuleFor(x => x.StartDate)
+                .NotEmpty().WithMessage("تاريخ البدء مطلوب")
+                .GreaterThan(DateTime.UtcNow).WithMessage("تاريخ البدء يجب أن يكون في المستقبل");
+
+            RuleFor(x => x.EndDate)
+                .NotEmpty().WithMessage("تاريخ الانتهاء مطلوب")
+                .GreaterThan(x => x.StartDate).WithMessage("تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء");
 
             RuleFor(x => x.ReservePrice)
-                .GreaterThan(0).WithMessage("Reserve price must be greater than 0");
+                .GreaterThan(0).WithMessage("السعر الابتدائي يجب أن يكون أكبر من 0");
 
             RuleFor(x => x.BidIncrement)
-                .GreaterThan(0).WithMessage("Bid increment must be greater than 0");
+                .GreaterThan(0).WithMessage("قيمة الزيادة يجب أن تكون أكبر من 0");
 
-            RuleFor(x => x.ImageUrl)
-                .NotEmpty().WithMessage("Image URL is required");
+            RuleFor(x => x.CategoryId)
+                .NotEmpty().WithMessage("التصنيف مطلوب");
+
+            RuleFor(x => x.Images)
+                .NotEmpty().WithMessage("الصور مطلوبة")
+                .Must(x => x != null && x.Count > 0).WithMessage("يجب إضافة صورة واحدة على الأقل");
         }
     }
 }

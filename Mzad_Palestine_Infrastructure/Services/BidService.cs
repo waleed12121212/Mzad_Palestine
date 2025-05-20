@@ -17,7 +17,7 @@ namespace Mzad_Palestine_Infrastructure.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAutoBidProcessingService _autoBidProcessingService;
 
-        public BidService(IUnitOfWork unitOfWork, IAutoBidProcessingService autoBidProcessingService)
+        public BidService(IUnitOfWork unitOfWork , IAutoBidProcessingService autoBidProcessingService)
         {
             _unitOfWork = unitOfWork;
             _autoBidProcessingService = autoBidProcessingService;
@@ -26,7 +26,7 @@ namespace Mzad_Palestine_Infrastructure.Services
         public async Task<BidDto> CreateBidAsync(Bid bid)
         {
             if (bid == null)
-                throw new ArgumentNullException(nameof(bid), "العرض غير صالح");
+                throw new ArgumentNullException(nameof(bid) , "العرض غير صالح");
 
             // Get the auction
             var auction = await _unitOfWork.Auctions.GetByIdAsync(bid.AuctionId);
@@ -34,11 +34,11 @@ namespace Mzad_Palestine_Infrastructure.Services
                 throw new InvalidOperationException("المزاد غير موجود");
 
             // Check if auction is open
-            if (auction.Status != AuctionStatus.Open)
+            if (auction.Status != AuctionStatus.Open.ToString())
                 throw new InvalidOperationException("المزاد مغلق");
 
             // Check if auction has ended
-            if (auction.EndTime <= DateTime.UtcNow)
+            if (auction.EndDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("المزاد منتهي");
 
             // Check if bid amount is greater than current bid
@@ -63,30 +63,30 @@ namespace Mzad_Palestine_Infrastructure.Services
             {
                 // Set bid time
                 bid.BidTime = DateTime.UtcNow;
-                
+
                 // Add the bid
                 await _unitOfWork.Bids.AddAsync(bid);
 
                 // Update auction's current bid
                 auction.CurrentBid = bid.BidAmount;
                 auction.UpdatedAt = DateTime.UtcNow;
-                
+
                 // Save changes
                 await _unitOfWork.CompleteAsync();
 
                 // Process auto bids after a successful bid
                 if (!bid.IsAutoBid)
                 {
-                    await _autoBidProcessingService.ProcessAutoBidsForAuctionAsync(bid.AuctionId, bid.BidAmount);
+                    await _autoBidProcessingService.ProcessAutoBidsForAuctionAsync(bid.AuctionId , bid.BidAmount);
                 }
 
                 return new BidDto(
-                    id: bid.BidId,
-                    auctionId: bid.AuctionId,
-                    userId: bid.UserId.ToString(),
-                    userName: user.UserName,
-                    bidAmount: bid.BidAmount,
-                    createdAt: bid.BidTime,
+                    id: bid.BidId ,
+                    auctionId: bid.AuctionId ,
+                    userId: bid.UserId.ToString() ,
+                    userName: user.UserName ,
+                    bidAmount: bid.BidAmount ,
+                    createdAt: bid.BidTime ,
                     isWinning: true
                 );
             }
@@ -104,12 +104,12 @@ namespace Mzad_Palestine_Infrastructure.Services
             foreach (var bid in bids)
             {
                 bidDtos.Add(new BidDto(
-                    id: bid.BidId,
-                    auctionId: bid.AuctionId,
-                    userId: bid.UserId.ToString(),
-                    userName: bid.User?.UserName ?? "Unknown",
-                    bidAmount: bid.BidAmount,
-                    createdAt: bid.BidTime,
+                    id: bid.BidId ,
+                    auctionId: bid.AuctionId ,
+                    userId: bid.UserId.ToString() ,
+                    userName: bid.User?.UserName ?? "Unknown" ,
+                    bidAmount: bid.BidAmount ,
+                    createdAt: bid.BidTime ,
                     isWinning: bid.IsWinner
                 ));
             }
@@ -125,12 +125,12 @@ namespace Mzad_Palestine_Infrastructure.Services
             foreach (var bid in bids)
             {
                 bidDtos.Add(new BidDto(
-                    id: bid.BidId,
-                    auctionId: bid.AuctionId,
-                    userId: bid.UserId.ToString(),
-                    userName: bid.User?.UserName ?? "Unknown",
-                    bidAmount: bid.BidAmount,
-                    createdAt: bid.BidTime,
+                    id: bid.BidId ,
+                    auctionId: bid.AuctionId ,
+                    userId: bid.UserId.ToString() ,
+                    userName: bid.User?.UserName ?? "Unknown" ,
+                    bidAmount: bid.BidAmount ,
+                    createdAt: bid.BidTime ,
                     isWinning: bid.IsWinner
                 ));
             }
@@ -138,7 +138,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             return bidDtos;
         }
 
-        public async Task DeleteBidAsync(int bidId, int userId)
+        public async Task DeleteBidAsync(int bidId , int userId)
         {
             var bid = await _unitOfWork.Bids.GetByIdAsync(bidId);
             if (bid == null)

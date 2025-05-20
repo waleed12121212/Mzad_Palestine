@@ -1,24 +1,35 @@
-using Mzad_Palestine_Core.Enums;
 using System;
+using System.Collections.Generic;
 
-namespace Mzad_Palestine_Core.DTO_s.Auction
+namespace Mzad_Palestine_Core.DTOs.Auction
 {
     public class AuctionResponseDto
     {
         public int AuctionId { get; set; }
-        public int ListingId { get; set; }
-        public string Name { get; set; }
-        public string CategoryName { get; set; }
-        public int CategoryId { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Address { get; set; }
         public decimal ReservePrice { get; set; }
         public decimal CurrentBid { get; set; }
         public decimal BidIncrement { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public string ImageUrl { get; set; }
-        public AuctionStatus Status { get; set; }
-        public int BidsCount { get; set; }
-        public int? WinnerId { get; set; }
-        public string WinnerName { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public int UserId { get; set; }
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
+        public List<string> Images { get; set; }
+        public List<BidDto> Bids { get; set; }
+    }
+
+    public class BidDto
+    {
+        public int BidId { get; set; }
+        public decimal BidAmount { get; set; }
+        public DateTime BidTime { get; set; }
+        public int UserId { get; set; }
+        public bool IsWinner { get; set; }
     }
 } 

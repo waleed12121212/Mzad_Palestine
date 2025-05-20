@@ -28,6 +28,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedListing)
                 .Include(r => r.Resolver)
+                .Include(r => r.ReportedAuction)
                 .ToListAsync();
         }
 
@@ -36,6 +37,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _reports
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedListing)
+                .Include(r => r.ReportedAuction)
                 .Include(r => r.Resolver)
                 .FirstOrDefaultAsync(r => r.ReportId == id);
         }
@@ -46,7 +48,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             {
                 // تعيين القيم الافتراضية
                 report.CreatedAt = DateTime.UtcNow;
-                report.StatusId = 0; // حالة "قيد الانتظار"
+                report.Status = "Pending";
                 
                 // إضافة التقرير
                 await _reports.AddAsync(report);
@@ -58,6 +60,7 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 return await _reports
                     .Include(r => r.Reporter)
                     .Include(r => r.ReportedListing)
+                    .Include(r => r.ReportedAuction)
                     .FirstOrDefaultAsync(r => r.ReportId == report.ReportId);
             }
             catch (Exception ex)
@@ -87,9 +90,10 @@ namespace Mzad_Palestine_Infrastructure.Repositories
         public async Task<IEnumerable<Report>> GetPendingReportsAsync()
         {
             return await _reports
-                .Where(r => r.StatusId == 0)
+                .Where(r => r.Status == "Pending")
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedListing)
+                .Include(r => r.ReportedAuction)
                 .ToListAsync();
         }
 
@@ -99,8 +103,41 @@ namespace Mzad_Palestine_Infrastructure.Repositories
             return await _reports
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedListing)
+                .Include(r => r.ReportedAuction)
                 .Include(r => r.Resolver)
                 .FirstOrDefaultAsync(r => r.Reason.Contains(name));
+        }
+
+        public async Task<IEnumerable<Report>> GetByReporterIdAsync(int reporterId)
+        {
+            return await _reports
+                .Include(r => r.Reporter)
+                .Include(r => r.ReportedListing)
+                .Include(r => r.ReportedAuction)
+                .Include(r => r.Resolver)
+                .Where(r => r.ReporterId == reporterId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Report>> GetByStatusAsync(string status)
+        {
+            return await _reports
+                .Include(r => r.Reporter)
+                .Include(r => r.ReportedListing)
+                .Include(r => r.ReportedAuction)
+                .Include(r => r.Resolver)
+                .Where(r => r.Status == status)
+                .ToListAsync();
+        }
+
+        public void Update(Report report)
+        {
+            _context.Reports.Update(report);
+        }
+
+        public async Task DeleteAsync(Report report)
+        {
+            _context.Reports.Remove(report);
         }
     }
 }

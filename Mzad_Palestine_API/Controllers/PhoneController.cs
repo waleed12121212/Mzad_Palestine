@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Mzad_Palestine_API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class PhoneController : ControllerBase
     {
         private readonly IPhonePredictionService _phonePredictionService;
@@ -23,7 +23,7 @@ namespace Mzad_Palestine_API.Controllers
             try
             {
                 // التحقق من صحة البيانات
-                if (!ValidatePhoneData(phone, out string errorMessage))
+                if (!ValidatePhoneData(phone , out string errorMessage))
                 {
                     return BadRequest(new { error = errorMessage });
                 }
@@ -43,7 +43,7 @@ namespace Mzad_Palestine_API.Controllers
             try
             {
                 // التحقق من صحة البيانات
-                if (!ValidatePhoneData(phone, out string errorMessage))
+                if (!ValidatePhoneData(phone , out string errorMessage))
                 {
                     return BadRequest(new { error = errorMessage });
                 }
@@ -57,7 +57,7 @@ namespace Mzad_Palestine_API.Controllers
             }
         }
 
-        private bool ValidatePhoneData(Phone phone, out string errorMessage)
+        private bool ValidatePhoneData(Phone phone , out string errorMessage)
         {
             errorMessage = string.Empty;
 
@@ -134,7 +134,7 @@ namespace Mzad_Palestine_API.Controllers
 
             // التحقق من تنسيق الكاميرا (مثال: "12MP" أو "12MP+12MP")
             var pattern = @"^(\d+MP)(\+\d+MP)*$";
-            return Regex.IsMatch(cameraSpec.Trim(), pattern);
+            return Regex.IsMatch(cameraSpec.Trim() , pattern);
         }
     }
-} 
+}

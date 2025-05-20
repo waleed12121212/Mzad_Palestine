@@ -21,7 +21,7 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
@@ -36,10 +36,14 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { error = "المستخدم غير موجود" });
                 }
 
-                dto.UserId = userId;
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { error = "معرف المستخدم غير صالح" });
+                }
 
+                dto.UserId = parsedUserId;
                 var listing = await _listingService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = listing.ListingId }, listing);
+                return CreatedAtAction(nameof(GetById) , new { id = listing.ListingId } , listing);
             }
             catch (Exception ex)
             {
@@ -263,6 +267,35 @@ namespace Mzad_Palestine_API.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] ListingSearchDto searchDto)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                var listings = await _listingService.SearchListingsAsync(searchDto);
+                return Ok(new { success = true, data = listings });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
     }

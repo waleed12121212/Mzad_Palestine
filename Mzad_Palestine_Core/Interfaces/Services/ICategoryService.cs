@@ -18,5 +18,7 @@ namespace Mzad_Palestine_Core.Interfaces.Services
         Task<IEnumerable<Category>> GetByParentIdAsync(int parentId);
         Task<bool> ToggleActiveStatusAsync(int id);
         Task<IEnumerable<Category>> GetActiveCategoriesAsync();
+        Task<IEnumerable<CategoryWithCountsDto>> GetAllWithCountsAsync();
+        Task<CategoryWithCountsDto> GetByIdWithCountsAsync(int id);
     }
 } 

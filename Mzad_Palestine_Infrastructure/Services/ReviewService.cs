@@ -22,6 +22,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = createReviewDto.ReviewerId,
                 ReviewedUserId = createReviewDto.ReviewedUserId,
                 ListingId = createReviewDto.ListingId,
+                AuctionId = createReviewDto.AuctionId,
                 Comment = createReviewDto.Comment,
                 Rating = createReviewDto.Rating,
                 CreatedAt = DateTime.UtcNow
@@ -36,6 +37,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = review.ReviewerId,
                 ReviewedUserId = review.ReviewedUserId,
                 ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
                 Comment = review.Comment,
                 Rating = review.Rating,
                 CreatedAt = review.CreatedAt
@@ -51,6 +53,23 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = review.ReviewerId,
                 ReviewedUserId = review.ReviewedUserId,
                 ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
+                Comment = review.Comment,
+                Rating = review.Rating,
+                CreatedAt = review.CreatedAt
+            });
+        }
+
+        public async Task<IEnumerable<ReviewDto>> GetByAuctionIdAsync(int auctionId)
+        {
+            var reviews = await _reviewRepository.FindAsync(r => r.AuctionId == auctionId);
+            return reviews.Select(review => new ReviewDto
+            {
+                Id = review.Id,
+                ReviewerId = review.ReviewerId,
+                ReviewedUserId = review.ReviewedUserId,
+                ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
                 Comment = review.Comment,
                 Rating = review.Rating,
                 CreatedAt = review.CreatedAt
@@ -66,6 +85,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = review.ReviewerId,
                 ReviewedUserId = review.ReviewedUserId,
                 ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
                 Comment = review.Comment,
                 Rating = review.Rating,
                 CreatedAt = review.CreatedAt
@@ -81,6 +101,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = review.ReviewerId,
                 ReviewedUserId = review.ReviewedUserId,
                 ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
                 Comment = review.Comment,
                 Rating = review.Rating,
                 CreatedAt = review.CreatedAt
@@ -114,6 +135,7 @@ namespace Mzad_Palestine_Infrastructure.Services
                 ReviewerId = review.ReviewerId,
                 ReviewedUserId = review.ReviewedUserId,
                 ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
                 Comment = review.Comment,
                 Rating = review.Rating,
                 CreatedAt = review.CreatedAt
@@ -141,6 +163,37 @@ namespace Mzad_Palestine_Infrastructure.Services
 
             var reviewsList = reviews.ToList();
             return (reviewsList.Average(r => r.Rating), reviewsList.Count);
+        }
+
+        public async Task<(double averageRating, int totalReviews)> GetAuctionAverageRatingAsync(int auctionId)
+        {
+            var reviews = await _reviewRepository.FindAsync(r => r.AuctionId == auctionId);
+            if (!reviews.Any())
+            {
+                return (0, 0);
+            }
+
+            var reviewsList = reviews.ToList();
+            return (reviewsList.Average(r => r.Rating), reviewsList.Count);
+        }
+
+        public async Task<ReviewDto> GetByIdAsync(int id)
+        {
+            var review = await _reviewRepository.GetByIdAsync(id);
+            if (review == null)
+                return null;
+
+            return new ReviewDto
+            {
+                Id = review.Id,
+                ReviewerId = review.ReviewerId,
+                ReviewedUserId = review.ReviewedUserId,
+                ListingId = review.ListingId,
+                AuctionId = review.AuctionId,
+                Comment = review.Comment,
+                Rating = review.Rating,
+                CreatedAt = review.CreatedAt
+            };
         }
     }
 }

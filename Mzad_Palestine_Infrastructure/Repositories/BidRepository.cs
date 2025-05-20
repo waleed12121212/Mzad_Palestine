@@ -58,5 +58,14 @@ namespace Mzad_Palestine_Infrastructure.Repositories
                 .OrderByDescending(b => b.BidAmount)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<Bid>> GetByAuctionAsync(int auctionId)
+        {
+            return await _bids
+                .Where(b => b.AuctionId == auctionId)
+                .Include(b => b.User)
+                .OrderByDescending(b => b.BidTime)
+                .ToListAsync();
+        }
     }
 }

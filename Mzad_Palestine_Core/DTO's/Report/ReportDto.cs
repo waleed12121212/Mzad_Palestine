@@ -23,11 +23,4 @@ namespace Mzad_Palestine_Core.DTOs
         public int ReporterId { get; set; }
         public int ReportedListingId { get; set; }
     }
-
-    public class UpdateReportDto
-    {
-        public string Reason { get; set; }
-        public int? ResolvedBy { get; set; }
-        public int StatusId { get; set; }
-    }
 } 

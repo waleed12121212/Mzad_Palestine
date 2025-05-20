@@ -12,10 +12,17 @@ namespace Mzad_Palestine_API.Controllers
     public class WishlistController : ControllerBase
     {
         private readonly IWatchlistService _watchlistService;
+        private readonly IListingService _listingService;
+        private readonly IAuctionService _auctionService;
 
-        public WishlistController(IWatchlistService watchlistService)
+        public WishlistController(
+            IWatchlistService watchlistService,
+            IListingService listingService,
+            IAuctionService auctionService)
         {
             _watchlistService = watchlistService;
+            _listingService = listingService;
+            _auctionService = auctionService;
         }
 
         [HttpGet]
@@ -26,7 +33,7 @@ namespace Mzad_Palestine_API.Controllers
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -35,27 +42,27 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
                 var watchlistItems = await _watchlistService.GetByUserIdAsync(int.Parse(userId));
-                return Ok(watchlistItems);
+                return Ok(new { success = true, data = watchlistItems });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpPost("{listingId:int}")]
-        public async Task<IActionResult> Add(int listingId)
+        [HttpPost("listing/{listingId:int}")]
+        public async Task<IActionResult> AddListing(int listingId)
         {
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -64,27 +71,34 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
-                var watchlistItem = await _watchlistService.AddAsync(int.Parse(userId), listingId);
-                return CreatedAtAction(nameof(GetAll), watchlistItem);
+                // التحقق من وجود القائمة
+                var listing = await _listingService.GetByIdAsync(listingId);
+                if (listing == null)
+                {
+                    return NotFound(new { success = false, error = "القائمة غير موجودة" });
+                }
+
+                var watchlistItem = await _watchlistService.AddListingAsync(int.Parse(userId), listingId);
+                return CreatedAtAction(nameof(GetAll), new { success = true, data = watchlistItem });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
 
-        [HttpDelete("{listingId:int}")]
-        public async Task<IActionResult> Remove(int listingId)
+        [HttpPost("auction/{auctionId:int}")]
+        public async Task<IActionResult> AddAuction(int auctionId)
         {
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -93,15 +107,80 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
                 }
 
-                await _watchlistService.DeleteFromWatchlistAsync(int.Parse(userId), listingId);
-                return Ok(new { message = "تم حذف العنصر من المفضلة بنجاح" });
+                // التحقق من وجود المزاد
+                var auction = await _auctionService.GetByIdAsync(auctionId);
+                if (auction == null)
+                {
+                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                }
+
+                var watchlistItem = await _watchlistService.AddAuctionAsync(int.Parse(userId), auctionId);
+                return CreatedAtAction(nameof(GetAll), new { success = true, data = watchlistItem });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpDelete("listing/{listingId:int}")]
+        public async Task<IActionResult> RemoveListing(int listingId)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                await _watchlistService.RemoveListingAsync(int.Parse(userId), listingId);
+                return Ok(new { success = true, message = "تم حذف القائمة من المفضلة بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpDelete("auction/{auctionId:int}")]
+        public async Task<IActionResult> RemoveAuction(int auctionId)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                await _watchlistService.RemoveAuctionAsync(int.Parse(userId), auctionId);
+                return Ok(new { success = true, message = "تم حذف المزاد من المفضلة بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
             }
         }
     }

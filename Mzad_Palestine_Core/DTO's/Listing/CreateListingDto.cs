@@ -1,30 +1,31 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mzad_Palestine_Core.DTOs.Listing
 {
     public class CreateListingDto
     {
-        [Required(ErrorMessage = "عنوان المنتج مطلوب")]
-        [StringLength(100, ErrorMessage = "العنوان يجب أن لا يتجاوز 100 حرف")]
+        [Required]
         public string Title { get; set; }
 
-        [Required(ErrorMessage = "وصف المنتج مطلوب")]
-        [StringLength(1000, ErrorMessage = "الوصف يجب أن لا يتجاوز 1000 حرف")]
+        [Required]
         public string Description { get; set; }
 
-        [Required(ErrorMessage = "السعر الابتدائي مطلوب")]
-        [Range(0, double.MaxValue, ErrorMessage = "السعر يجب أن يكون أكبر من 0")]
-        public decimal StartingPrice { get; set; }
+        [Required]
+        public string Address { get; set; }
 
-        [Required(ErrorMessage = "التصنيف مطلوب")]
+        [Required]
+        public decimal Price { get; set; }
+
+        [Required]
         public int CategoryId { get; set; }
 
-        [Required(ErrorMessage = "تاريخ انتهاء المزاد مطلوب")]
+        [Required]
         public DateTime EndDate { get; set; }
 
-        [Required(ErrorMessage = "الصور مطلوبة")]
         public List<string> Images { get; set; }
 
-        public string UserId { get; set; }
+        public int UserId { get; set; }
     }
 } 

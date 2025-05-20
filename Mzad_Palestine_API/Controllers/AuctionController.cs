@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Mzad_Palestine_Core.Enums;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using AutoMapper;
 
 namespace Mzad_Palestine_API.Controllers
 {
@@ -18,13 +19,15 @@ namespace Mzad_Palestine_API.Controllers
     {
         private readonly IAuctionService _auctionService;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IMapper _mapper;
 
-        public AuctionController(IAuctionService auctionService)
+        public AuctionController(IAuctionService auctionService , IMapper mapper)
         {
             _auctionService = auctionService;
+            _mapper = mapper;
             _jsonOptions = new JsonSerializerOptions
             {
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.Preserve ,
                 MaxDepth = 32
             };
         }
@@ -54,7 +57,7 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false , error = "معرف المستخدم غير صالح" });
                 }
 
-                if (dto.EndTime <= DateTime.UtcNow)
+                if (dto.EndDate <= DateTime.UtcNow)
                 {
                     return BadRequest(new { success = false , error = "وقت انتهاء المزاد يجب أن يكون في المستقبل" });
                 }
@@ -71,25 +74,15 @@ namespace Mzad_Palestine_API.Controllers
                     });
                 }
 
-                var auction = new Auction
-                {
-                    ListingId = dto.ListingId ,
-                    Name = dto.Name ,
-                    StartTime = dto.StartTime ,
-                    EndTime = dto.EndTime ,
-                    ReservePrice = dto.ReservePrice ,
-                    BidIncrement = dto.BidIncrement ,
-                    ImageUrl = dto.ImageUrl ,
-                    UserId = parsedUserId ,
-                    Status = AuctionStatus.Open ,
-                    CreatedAt = DateTime.UtcNow
-                };
+                // تمرير UserId مع الداتا
+                dto.UserId = parsedUserId;
 
-                await _auctionService.CreateAuctionAsync(auction);
+                var result = await _auctionService.CreateAsync(dto);
+                var auctionDto = _mapper.Map<AuctionDto>(result);
                 return CreatedAtAction(
                     nameof(GetById) ,
-                    new { id = auction.AuctionId } ,
-                    new { success = true , data = auction }
+                    new { id = result.AuctionId } ,
+                    new { success = true , data = auctionDto }
                 );
             }
             catch (Exception ex)
@@ -122,14 +115,9 @@ namespace Mzad_Palestine_API.Controllers
                 if (auction == null)
                     return NotFound(new { error = "المزاد غير موجود" });
 
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                };
-
-                var jsonResult = JsonSerializer.Serialize(new { success = true, data = auction }, jsonOptions);
-                return Content(jsonResult, "application/json");
+                var auctionDto = _mapper.Map<AuctionDto>(auction);
+                auctionDto.Bids = _mapper.Map<List<BidDto>>(auction.Bids);
+                return Ok(new { success = true , data = auctionDto });
             }
             catch (Exception ex)
             {
@@ -138,7 +126,7 @@ namespace Mzad_Palestine_API.Controllers
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetActive( )
+        public async Task<IActionResult> GetActive()
         {
             try
             {
@@ -157,8 +145,9 @@ namespace Mzad_Palestine_API.Controllers
                     return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
                 }
 
-                var auctions = await _auctionService.GetActiveAsync();
-                return Ok(new { success = true , data = auctions });
+                var auctions = await _auctionService.GetOpenAuctionsAsync();
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {
@@ -201,15 +190,16 @@ namespace Mzad_Palestine_API.Controllers
                 var updatedAuction = new Auction
                 {
                     AuctionId = id ,
-                    ListingId = auction.ListingId ,
-                    Name = auction.Name ,
-                    StartTime = dto.StartTime ?? auction.StartTime ,
-                    EndTime = dto.EndTime ?? auction.EndTime ,
+                    Title = dto.Title ?? auction.Title ,
+                    Description = dto.Description ?? auction.Description ,
+                    Address = dto.Address ?? auction.Address ,
+                    StartDate = dto.StartDate ?? auction.StartDate ,
+                    EndDate = dto.EndDate ?? auction.EndDate ,
                     ReservePrice = dto.ReservePrice ?? auction.ReservePrice ,
                     BidIncrement = dto.BidIncrement ?? auction.BidIncrement ,
-                    ImageUrl = !string.IsNullOrEmpty(dto.ImageUrl) ? dto.ImageUrl : auction.ImageUrl ,
+                    CategoryId = dto.CategoryId ?? auction.CategoryId ,
                     UserId = auction.UserId ,
-                    Status = dto.Status ?? auction.Status ,
+                    Status = dto.Status?.ToString() ?? auction.Status ,
                     CreatedAt = auction.CreatedAt ,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -217,7 +207,8 @@ namespace Mzad_Palestine_API.Controllers
                 await _auctionService.UpdateAuctionAsync(updatedAuction , parsedUserId);
 
                 var updatedDetails = await _auctionService.GetAuctionDetailsAsync(id);
-                return Ok(new { success = true , data = updatedDetails });
+                var updatedAuctionDto = _mapper.Map<AuctionDto>(updatedDetails);
+                return Ok(new { success = true , data = updatedAuctionDto });
             }
             catch (Exception ex)
             {
@@ -266,10 +257,10 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -278,16 +269,16 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
                 }
 
                 var auctions = await _auctionService.SearchAuctionsAsync(searchDto);
-                var jsonResult = JsonSerializer.Serialize(new { success = true, data = auctions }, _jsonOptions);
-                return Content(jsonResult, "application/json");
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
@@ -296,10 +287,10 @@ namespace Mzad_Palestine_API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
                 }
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -308,15 +299,16 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(currentUserId))
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
                 }
 
                 var auctions = await _auctionService.GetUserAuctionsAsync(userId);
-                return Ok(new { success = true, data = auctions });
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
@@ -341,7 +333,8 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var auctions = await _auctionService.GetOpenAuctionsAsync();
-                return Ok(new { success = true , data = auctions });
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {
@@ -370,7 +363,8 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var auctions = await _auctionService.GetClosedAuctionsAsync();
-                return Ok(new { success = true , data = auctions });
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {
@@ -402,7 +396,8 @@ namespace Mzad_Palestine_API.Controllers
                 if (auction == null)
                     return NotFound(new { error = "المزاد غير موجود" });
 
-                return Ok(new { success = true , data = auction });
+                var auctionDto = _mapper.Map<AuctionDto>(auction);
+                return Ok(new { success = true , data = auctionDto });
             }
             catch (Exception ex)
             {
@@ -445,7 +440,68 @@ namespace Mzad_Palestine_API.Controllers
                 await _auctionService.CloseAuctionAsync(id , parsedUserId);
 
                 var updatedAuction = await _auctionService.GetAuctionDetailsAsync(id);
-                return Ok(new { success = true , message = "تم إغلاق المزاد بنجاح" , data = updatedAuction });
+                var updatedAuctionDto = _mapper.Map<AuctionDto>(updatedAuction);
+                return Ok(new { success = true , message = "تم إغلاق المزاد بنجاح" , data = updatedAuctionDto });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false , error = ex.Message });
+            }
+        }
+
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingAuctions( )
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
+                }
+
+                var auctions = await _auctionService.GetPendingAuctionsAsync();
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false , error = ex.Message });
+            }
+        }
+
+        [HttpGet("completed")]
+        public async Task<IActionResult> GetCompletedAuctions( )
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
+                }
+
+                var auctions = await _auctionService.GetCompletedAuctionsAsync();
+                var auctionDtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
+                return Ok(new { success = true , data = auctionDtos });
             }
             catch (Exception ex)
             {

@@ -20,13 +20,13 @@ namespace Mzad_Palestine_API.Controllers
         private readonly IAuctionService _auctionService;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public BidController(IBidService bidService, IAuctionService auctionService)
+        public BidController(IBidService bidService , IAuctionService auctionService)
         {
             _bidService = bidService;
             _auctionService = auctionService;
             _jsonOptions = new JsonSerializerOptions
             {
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.Preserve ,
                 MaxDepth = 32
             };
         }
@@ -39,9 +39,10 @@ namespace Mzad_Palestine_API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { 
-                        success = false, 
-                        error = "بيانات العرض غير صالحة",
+                    return BadRequest(new
+                    {
+                        success = false ,
+                        error = "بيانات العرض غير صالحة" ,
                         details = ModelState.Values
                             .SelectMany(v => v.Errors)
                             .Select(e => e.ErrorMessage)
@@ -49,10 +50,10 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 // Get token from request headers
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer " , "");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                    return Unauthorized(new { success = false , error = "الرجاء تسجيل الدخول" });
                 }
 
                 // Extract user ID from token
@@ -62,75 +63,75 @@ namespace Mzad_Palestine_API.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                    return Unauthorized(new { success = false , error = "المستخدم غير موجود" });
                 }
 
-                if (!int.TryParse(userId, out int parsedUserId))
+                if (!int.TryParse(userId , out int parsedUserId))
                 {
-                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                    return BadRequest(new { success = false , error = "معرف المستخدم غير صالح" });
                 }
 
                 // Get the auction
                 var auction = await _auctionService.GetAuctionDetailsAsync(dto.AuctionId);
                 if (auction == null)
                 {
-                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                    return NotFound(new { success = false , error = "المزاد غير موجود" });
                 }
 
                 // التحقق من حالة المزاد
-                if (auction.Status != Mzad_Palestine_Core.Enums.AuctionStatus.Open)
+                if (auction.Status != Mzad_Palestine_Core.Enums.AuctionStatus.Open.ToString())
                 {
-                    return BadRequest(new { success = false, error = "المزاد مغلق" });
+                    return BadRequest(new { success = false , error = "المزاد مغلق" });
                 }
 
                 // التحقق من وقت المزاد
-                if (auction.EndTime <= DateTime.UtcNow)
+                if (auction.EndDate <= DateTime.UtcNow)
                 {
-                    return BadRequest(new { success = false, error = "المزاد منتهي" });
+                    return BadRequest(new { success = false , error = "المزاد منتهي" });
                 }
 
                 // التحقق من قيمة العرض
                 if (dto.BidAmount <= 0)
                 {
-                    return BadRequest(new { success = false, error = "يجب أن يكون مبلغ العرض أكبر من صفر" });
+                    return BadRequest(new { success = false , error = "يجب أن يكون مبلغ العرض أكبر من صفر" });
                 }
 
                 // التحقق من أن العرض أكبر من العرض الحالي
                 if (auction.CurrentBid >= dto.BidAmount)
                 {
-                    return BadRequest(new { success = false, error = "يجب أن يكون العرض أعلى من السعر الحالي" });
+                    return BadRequest(new { success = false , error = "يجب أن يكون العرض أعلى من السعر الحالي" });
                 }
 
                 // التحقق من الحد الأدنى للزيادة
                 var minimumBidAmount = auction.CurrentBid + auction.BidIncrement;
                 if (dto.BidAmount < minimumBidAmount)
                 {
-                    return BadRequest(new { success = false, error = $"يجب أن يكون العرض أعلى بمقدار {auction.BidIncrement} على الأقل" });
+                    return BadRequest(new { success = false , error = $"يجب أن يكون العرض أعلى بمقدار {auction.BidIncrement} على الأقل" });
                 }
 
                 // التحقق من أن المزايد ليس مالك المزاد
                 if (auction.UserId == parsedUserId)
                 {
-                    return BadRequest(new { success = false, error = "لا يمكن للمالك المزايدة على مزاده" });
+                    return BadRequest(new { success = false , error = "لا يمكن للمالك المزايدة على مزاده" });
                 }
 
                 var bid = new Bid
                 {
-                    AuctionId = dto.AuctionId,
-                    UserId = parsedUserId,
-                    BidAmount = dto.BidAmount,
-                    BidTime = DateTime.UtcNow,
-                    Status = Mzad_Palestine_Core.Enums.BidStatus.Pending,
-                    IsAutoBid = false,
+                    AuctionId = dto.AuctionId ,
+                    UserId = parsedUserId ,
+                    BidAmount = dto.BidAmount ,
+                    BidTime = DateTime.UtcNow ,
+                    Status = Mzad_Palestine_Core.Enums.BidStatus.Pending ,
+                    IsAutoBid = false ,
                     IsWinner = false
                 };
 
                 var result = await _bidService.CreateBidAsync(bid);
-                return Ok(new { success = true, message = "تم إضافة العرض بنجاح", data = result });
+                return Ok(new { success = true , message = "تم إضافة العرض بنجاح" , data = result });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
@@ -146,20 +147,20 @@ namespace Mzad_Palestine_API.Controllers
                 var auction = await _auctionService.GetAuctionDetailsAsync(auctionId);
                 if (auction == null)
                 {
-                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                    return NotFound(new { success = false , error = "المزاد غير موجود" });
                 }
 
                 var bids = await _bidService.GetAuctionBidsAsync(auctionId);
-                return Ok(new { success = true, data = bids });
+                return Ok(new { success = true , data = bids });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
         [HttpGet("user")]
-        public async Task<IActionResult> GetUserBids()
+        public async Task<IActionResult> GetUserBids( )
         {
             try
             {
@@ -167,11 +168,11 @@ namespace Mzad_Palestine_API.Controllers
                 int parsedUserId = 1;
 
                 var bids = await _bidService.GetUserBidsAsync(parsedUserId);
-                return Ok(new { success = true, data = bids });
+                return Ok(new { success = true , data = bids });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
 
@@ -183,12 +184,12 @@ namespace Mzad_Palestine_API.Controllers
                 // Using hardcoded user ID
                 int parsedUserId = 1;
 
-                await _bidService.DeleteBidAsync(id, parsedUserId);
-                return Ok(new { success = true, message = "تم حذف العرض بنجاح" });
+                await _bidService.DeleteBidAsync(id , parsedUserId);
+                return Ok(new { success = true , message = "تم حذف العرض بنجاح" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, error = ex.Message });
+                return BadRequest(new { success = false , error = ex.Message });
             }
         }
     }

@@ -33,11 +33,11 @@ namespace Mzad_Palestine_Infrastructure.Services
                 throw new InvalidOperationException("المزاد غير موجود");
 
             // التحقق من حالة المزاد
-            if (auction.Status != AuctionStatus.Open)
+            if (auction.Status != AuctionStatus.Open.ToString())
                 throw new InvalidOperationException("المزاد مغلق");
 
             // التحقق من وقت المزاد
-            if (auction.EndTime <= DateTime.UtcNow)
+            if (auction.EndDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("المزاد منتهي");
 
             // التحقق من المستخدم

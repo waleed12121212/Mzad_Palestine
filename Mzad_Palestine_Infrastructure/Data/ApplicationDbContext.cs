@@ -37,6 +37,7 @@ namespace Mzad_Palestine_Infrastructure.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Phone> Phones { get; set; }
+        public DbSet<AuctionImage> AuctionImages { get; set; }
 
         // Override لـ OnModelCreating لتكوين العلاقات والقيود باستخدام Fluent API
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -78,8 +79,6 @@ namespace Mzad_Palestine_Infrastructure.Data
                 // إضافة نوع للأعمدة العشرية
                 entity.Property(l => l.Price)
                       .HasColumnType("decimal(18,2)");
-                entity.Property(l => l.StartingPrice)
-                      .HasColumnType("decimal(18,2)");
                 
                 // العلاقة مع User
                 entity.HasOne(l => l.User)
@@ -101,11 +100,14 @@ namespace Mzad_Palestine_Infrastructure.Data
                 entity.HasKey(c => c.Id);
                 entity.Property(c => c.Name)
                       .IsRequired()
-                      .HasMaxLength(255);
+                      .HasMaxLength(255)
+                      .HasColumnType("nvarchar(255)");
                 entity.Property(c => c.Description)
-                      .HasColumnType("nvarchar(max)");
+                      .HasColumnType("nvarchar(max)")
+                      .HasDefaultValue(null);
                 entity.Property(c => c.ImageUrl)
-                      .HasMaxLength(255);
+                      .HasMaxLength(255)
+                      .HasColumnType("nvarchar(255)");
                 // العلاقة مع نفسها (فئة فرعية)
                 entity.HasOne(c => c.ParentCategory)
                       .WithMany(c => c.SubCategories)
@@ -118,18 +120,30 @@ namespace Mzad_Palestine_Infrastructure.Data
             modelBuilder.Entity<Auction>(entity =>
             {
                 entity.HasKey(a => a.AuctionId);
+                entity.Property(a => a.Title)
+                      .IsRequired()
+                      .HasMaxLength(255);
+                entity.Property(a => a.Description)
+                      .HasMaxLength(2000);
                 entity.Property(a => a.ReservePrice)
                       .HasColumnType("decimal(18,2)");
                 entity.Property(a => a.CurrentBid)
                       .HasColumnType("decimal(18,2)");
                 entity.Property(a => a.BidIncrement)
                       .HasColumnType("decimal(18,2)");
+                entity.Property(a => a.StartDate)
+                      .IsRequired();
+                entity.Property(a => a.EndDate)
+                      .IsRequired();
+                entity.Property(a => a.Status)
+                      .IsRequired()
+                      .HasMaxLength(50);
                 entity.Property(a => a.CreatedAt)
                       .HasDefaultValueSql("GETDATE()");
                 entity.Property(a => a.UpdatedAt)
                       .HasDefaultValueSql("GETDATE()");
 
-                // العلاقة مع User
+                // العلاقة مع User (المالك)
                 entity.HasOne(a => a.User)
                       .WithMany()
                       .HasForeignKey(a => a.UserId)
@@ -141,11 +155,31 @@ namespace Mzad_Palestine_Infrastructure.Data
                       .HasForeignKey(a => a.WinnerId)
                       .OnDelete(DeleteBehavior.NoAction);
 
-                // العلاقة مع Listing
-                entity.HasOne(a => a.Listing)
-                      .WithOne(l => l.Auction)
-                      .HasForeignKey<Auction>(a => a.ListingId)
-                      .OnDelete(DeleteBehavior.NoAction);
+                // العلاقة مع Category
+                entity.HasOne(a => a.Category)
+                      .WithMany()
+                      .HasForeignKey(a => a.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region تكوين AuctionImage
+            modelBuilder.Entity<AuctionImage>(entity =>
+            {
+                entity.HasKey(ai => ai.ImageId);
+                entity.Property(ai => ai.ImageUrl)
+                      .IsRequired()
+                      .HasMaxLength(255);
+                entity.Property(ai => ai.IsMain)
+                      .HasDefaultValue(false);
+                entity.Property(ai => ai.CreatedAt)
+                      .HasDefaultValueSql("GETDATE()");
+
+                // العلاقة مع Auction
+                entity.HasOne(ai => ai.Auction)
+                      .WithMany(a => a.Images)
+                      .HasForeignKey(ai => ai.AuctionId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
 
@@ -287,37 +321,30 @@ namespace Mzad_Palestine_Infrastructure.Data
             #region تكوين Report
             modelBuilder.Entity<Report>(entity =>
             {
-                entity.HasKey(r => r.ReportId);
+                entity.HasKey(e => e.ReportId);
+                entity.Property(e => e.Reason).IsRequired();
+                entity.Property(e => e.Status).IsRequired();
+                entity.Property(e => e.ReportType).IsRequired();
                 
-                entity.Property(r => r.Reason)
-                      .IsRequired()
-                      .HasMaxLength(500);
-                
-                entity.Property(r => r.StatusId)
-                      .IsRequired()
-                      .HasDefaultValue(0);  // 0 يمثل "قيد الانتظار"
-                
-                entity.Property(r => r.CreatedAt)
-                      .HasDefaultValueSql("GETDATE()");
+                entity.HasOne(e => e.Reporter)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReporterId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                // العلاقة مع Reporter
-                entity.HasOne(r => r.Reporter)
-                      .WithMany()
-                      .HasForeignKey(r => r.ReporterId)
-                      .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Resolver)
+                    .WithMany()
+                    .HasForeignKey(e => e.ResolvedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                // العلاقة مع ReportedListing
-                entity.HasOne(r => r.ReportedListing)
-                      .WithMany()
-                      .HasForeignKey(r => r.ReportedListingId)
-                      .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.ReportedListing)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReportedListingId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                // العلاقة مع Resolver - تحديد اسم المفتاح الأجنبي بوضوح
-                entity.HasOne(r => r.Resolver)
-                      .WithMany()
-                      .HasForeignKey(r => r.ResolvedBy)
-                      .IsRequired(false) // يجعل العلاقة اختيارية لأن ResolvedBy يمكن أن يكون null
-                      .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.ReportedAuction)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReportedAuctionId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 

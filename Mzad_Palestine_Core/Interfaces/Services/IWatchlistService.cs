@@ -9,8 +9,10 @@ namespace Mzad_Palestine_Core.Interfaces.Services
 {
     public interface IWatchlistService
     {
-        Task<WatchlistDto> AddAsync(int userId , int listingId);
         Task<IEnumerable<WatchlistDto>> GetByUserIdAsync(int userId);
-        Task DeleteFromWatchlistAsync(int userId, int listingId);
+        Task<WatchlistDto> AddListingAsync(int userId, int listingId);
+        Task<WatchlistDto> AddAuctionAsync(int userId, int auctionId);
+        Task RemoveListingAsync(int userId, int listingId);
+        Task RemoveAuctionAsync(int userId, int auctionId);
     }
 }

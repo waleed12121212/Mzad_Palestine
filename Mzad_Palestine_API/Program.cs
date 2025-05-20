@@ -20,6 +20,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Mzad_Palestine_Core.Interfaces;
+using Mzad_Palestine_API.BackgroundServices;
 
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -191,6 +192,7 @@ builder.Services.AddScoped<IAutoBidProcessingService , AutoBidProcessingService>
 builder.Services.AddScoped<ITransactionService , TransactionService>();
 builder.Services.AddScoped<IImageService , ImageService>();
 builder.Services.AddScoped<IEmailService , EmailService>();
+builder.Services.AddScoped<AuctionStatusService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -208,6 +210,9 @@ builder.Services.AddSwaggerGen();
 
 // إضافة خدمة الكاش
 builder.Services.AddMemoryCache();
+
+// Add background service for auction status updates
+builder.Services.AddHostedService<AuctionStatusBackgroundService>();
 
 var app = builder.Build();
 

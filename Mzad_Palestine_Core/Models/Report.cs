@@ -13,36 +13,21 @@ namespace Mzad_Palestine_Core.Models
     {
         public int ReportId { get; set; }
         public string Reason { get; set; }
-        public DateTime CreatedAt { get; set; }
         public int ReporterId { get; set; }
-        public int ReportedListingId { get; set; }
+        public int? ReportedListingId { get; set; }
+        public int? ReportedAuctionId { get; set; }
+        public string ReportType { get; set; } // "Listing" or "Auction"
+        public string Status { get; set; } = "Pending";
         public int? ResolvedBy { get; set; }
-        
-        // Status as int in database
-        public int StatusId { get; set; }
+        public DateTime? ResolvedAt { get; set; }
+        public string Resolution { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        [NotMapped]
-        public string Status
-        {
-            get => StatusId switch
-            {
-                0 => "Pending",
-                1 => "Resolved",
-                2 => "Rejected",
-                _ => "Unknown"
-            };
-            set => StatusId = value switch
-            {
-                "Pending" => 0,
-                "Resolved" => 1,
-                "Rejected" => 2,
-                _ => 0
-            };
-        }
-
-        // Navigation Properties
-        public virtual User Reporter { get; set; }
-        public virtual Listing ReportedListing { get; set; }
-        public virtual User Resolver { get; set; }
+        // Navigation properties
+        public User Reporter { get; set; }
+        public User Resolver { get; set; }
+        public Listing ReportedListing { get; set; }
+        public Auction ReportedAuction { get; set; }
     }
 }

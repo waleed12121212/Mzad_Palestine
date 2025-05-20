@@ -10,17 +10,24 @@ namespace Mzad_Palestine_Core.Models
 {
     public class Review
     {
-        public int Id { get; set; }  // Changed from ReviewId
+        [Key]
+        public int Id { get; set; }
         public int ReviewerId { get; set; }
-        public int ReviewedUserId { get; set; }  // Changed from RevieweeId
-        public int ListingId { get; set; }
-        public int Rating { get; set; }
+        public int ReviewedUserId { get; set; }
+        public int? ListingId { get; set; }
+        public int? AuctionId { get; set; }
         public string Comment { get; set; }
+        public int Rating { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
+        [ForeignKey("ReviewerId")]
         public User Reviewer { get; set; }
-        public User ReviewedUser { get; set; }  // Changed from Reviewee
+        [ForeignKey("ReviewedUserId")]
+        public User ReviewedUser { get; set; }
+        [ForeignKey("ListingId")]
         public Listing Listing { get; set; }
+        [ForeignKey("AuctionId")]
+        public Auction Auction { get; set; }
     }
 }

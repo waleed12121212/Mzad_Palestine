@@ -29,15 +29,17 @@ namespace Mzad_Palestine_Infrastructure.Services
             {
                 Title = dto.Title ,
                 Description = dto.Description ,
-                StartingPrice = dto.StartingPrice ,
-                Price = dto.StartingPrice ,
+                Address = dto.Address ,
+                Price = dto.Price ,
+                StartingPrice = dto.Price ,
                 CategoryId = dto.CategoryId ,
+                UserId = dto.UserId ,
                 EndDate = dto.EndDate ,
                 Status = ListingStatus.Active ,
                 IsActive = true ,
                 IsSold = false ,
                 CreatedAt = DateTime.UtcNow ,
-                UserId = int.Parse(dto.UserId)
+                UpdatedAt = DateTime.UtcNow
             };
 
             await _unitOfWork.Listings.AddAsync(listing);
@@ -65,40 +67,91 @@ namespace Mzad_Palestine_Infrastructure.Services
                 await _unitOfWork.CompleteAsync();
             }
 
-            return await GetByIdAsync(listing.ListingId);
+            var createdListing = await _unitOfWork.Listings.GetByIdAsync(listing.ListingId);
+            var listingDto = _mapper.Map<ListingDto>(createdListing);
+            listingDto.Images = createdListing.Images.Select(i => i.ImageUrl).ToList();
+            return listingDto;
         }
 
         public async Task<ListingDto> GetByIdAsync(int id)
         {
             var listing = await _unitOfWork.Listings.GetByIdAsync(id);
-            return _mapper.Map<ListingDto>(listing);
+            if (listing == null) return null;
+
+            var listingDto = _mapper.Map<ListingDto>(listing);
+            listingDto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+            return listingDto;
         }
 
         public async Task<IEnumerable<ListingDto>> GetAllAsync( )
         {
             var listings = await _unitOfWork.Listings.GetAllAsync();
-            return _mapper.Map<IEnumerable<ListingDto>>(listings);
+            var listingDtos = _mapper.Map<IEnumerable<ListingDto>>(listings);
+
+            foreach (var dto in listingDtos)
+            {
+                var listing = listings.FirstOrDefault(l => l.ListingId == dto.ListingId);
+                if (listing != null)
+                {
+                    dto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+                }
+            }
+
+            return listingDtos;
         }
 
         public async Task<IEnumerable<ListingDto>> GetByUserIdAsync(int userId)
         {
             var listings = await _unitOfWork.Listings.GetByUserIdAsync(userId);
-            return _mapper.Map<IEnumerable<ListingDto>>(listings);
+            var listingDtos = _mapper.Map<IEnumerable<ListingDto>>(listings);
+
+            foreach (var dto in listingDtos)
+            {
+                var listing = listings.FirstOrDefault(l => l.ListingId == dto.ListingId);
+                if (listing != null)
+                {
+                    dto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+                }
+            }
+
+            return listingDtos;
         }
 
         public async Task<IEnumerable<ListingDto>> GetByCategoryAsync(int categoryId)
         {
             var listings = await _unitOfWork.Listings.GetByCategoryAsync(categoryId);
-            return _mapper.Map<IEnumerable<ListingDto>>(listings);
+            var listingDtos = _mapper.Map<IEnumerable<ListingDto>>(listings);
+
+            foreach (var dto in listingDtos)
+            {
+                var listing = listings.FirstOrDefault(l => l.ListingId == dto.ListingId);
+                if (listing != null)
+                {
+                    dto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+                }
+            }
+
+            return listingDtos;
         }
 
         public async Task<IEnumerable<ListingDto>> GetActiveAsync( )
         {
             var listings = await _unitOfWork.Listings.GetActiveAsync();
-            return _mapper.Map<IEnumerable<ListingDto>>(listings);
+            var listingDtos = _mapper.Map<IEnumerable<ListingDto>>(listings);
+
+            foreach (var dto in listingDtos)
+            {
+                var listing = listings.FirstOrDefault(l => l.ListingId == dto.ListingId);
+                if (listing != null)
+                {
+                    dto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+                }
+            }
+
+            return listingDtos;
         }
 
-        public async Task<ListingDto> UpdateAsync(int id, UpdateListingDto dto)
+        public async Task<ListingDto> UpdateAsync(int id , UpdateListingDto dto)
         {
             var listing = await _unitOfWork.Listings.GetByIdAsync(id);
             if (listing == null)
@@ -116,7 +169,7 @@ namespace Mzad_Palestine_Infrastructure.Services
             {
                 var imagesToDelete = await _unitOfWork.ListingImages.FindAsync(
                     img => img.ListingId == id && dto.ImagesToDelete.Contains(img.ImageUrl));
-                
+
                 foreach (var image in imagesToDelete)
                 {
                     await _unitOfWork.ListingImages.DeleteAsync(image);
@@ -128,9 +181,9 @@ namespace Mzad_Palestine_Infrastructure.Services
             {
                 var images = dto.NewImages.Select(imageUrl => new ListingImage
                 {
-                    ListingId = listing.ListingId,
-                    ImageUrl = imageUrl,
-                    CreatedAt = DateTime.UtcNow,
+                    ListingId = listing.ListingId ,
+                    ImageUrl = imageUrl ,
+                    CreatedAt = DateTime.UtcNow ,
                     IsMainImage = false
                 }).ToList();
 
@@ -147,10 +200,13 @@ namespace Mzad_Palestine_Infrastructure.Services
                 }
             }
 
-            _unitOfWork.Listings.Update(listing);
+            await _unitOfWork.Listings.UpdateAsync(listing);
             await _unitOfWork.CompleteAsync();
 
-            return await GetByIdAsync(id);
+            var updatedListing = await _unitOfWork.Listings.GetByIdAsync(id);
+            var listingDto = _mapper.Map<ListingDto>(updatedListing);
+            listingDto.Images = updatedListing.Images.Select(i => i.ImageUrl).ToList();
+            return listingDto;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -163,6 +219,65 @@ namespace Mzad_Palestine_Infrastructure.Services
             await _unitOfWork.CompleteAsync();
 
             return true;
+        }
+
+        public async Task<IEnumerable<ListingDto>> SearchListingsAsync(ListingSearchDto searchDto)
+        {
+            var query = _unitOfWork.Listings.GetQueryable();
+
+            if (!string.IsNullOrEmpty(searchDto.Keyword))
+            {
+                query = query.Where(l => l.Title.Contains(searchDto.Keyword) || l.Description.Contains(searchDto.Keyword));
+            }
+
+            if (!string.IsNullOrEmpty(searchDto.Category))
+            {
+                query = query.Where(l => l.Category.Name == searchDto.Category);
+            }
+
+            if (searchDto.MinPrice.HasValue)
+            {
+                query = query.Where(l => l.Price >= searchDto.MinPrice.Value);
+            }
+
+            if (searchDto.MaxPrice.HasValue)
+            {
+                query = query.Where(l => l.Price <= searchDto.MaxPrice.Value);
+            }
+
+            if (searchDto.StartDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt >= searchDto.StartDate.Value);
+            }
+
+            if (searchDto.EndDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt <= searchDto.EndDate.Value);
+            }
+
+            if (searchDto.Status.HasValue)
+            {
+                query = query.Where(l => (int)l.Status == searchDto.Status.Value);
+            }
+
+            if (searchDto.UserId.HasValue)
+            {
+                query = query.Where(l => l.UserId == searchDto.UserId.Value);
+            }
+
+            var listings = await query.ToListAsync();
+            var listingDtos = _mapper.Map<IEnumerable<ListingDto>>(listings);
+
+            foreach (var dto in listingDtos)
+            {
+                var listing = listings.FirstOrDefault(l => l.ListingId == dto.ListingId);
+                if (listing != null)
+                {
+                    dto.Images = listing.Images.Select(i => i.ImageUrl).ToList();
+                }
+            }
+
+            return listingDtos;
         }
     }
 }

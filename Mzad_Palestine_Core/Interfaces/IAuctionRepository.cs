@@ -13,7 +13,7 @@ namespace Mzad_Palestine_Core.Interfaces
         Task<IEnumerable<Auction>> GetOpenAuctionsAsync();                     // المزادات المفتوحة
         Task<IEnumerable<Auction>> GetClosedAuctionsAsync();                   // المزادات المغلقة
         Task<IEnumerable<Auction>> GetActiveAsync();                           // المزادات الفعالة حالياً
-        Task<IEnumerable<AuctionResponseDto>> GetByUserIdAsync(int userId);    // مزادات مستخدم معين
+        Task<IEnumerable<Auction>> GetByUserIdAsync(int userId);               // مزادات مستخدم معين
         Task<Auction> GetByIdAsync(int auctionId);                             // جلب مزاد بالتفصيل
         Task CloseAuctionAsync(int auctionId);                                 // إغلاق مزاد
         Task UpdateAsync(Auction auction);                                     // تحديث مزاد
@@ -21,7 +21,13 @@ namespace Mzad_Palestine_Core.Interfaces
         Task<bool> ExistsAsync(int auctionId);                                 // هل المزاد موجود؟
         Task<bool> IsAuctionOwnerAsync(int auctionId, int userId);            // هل المستخدم صاحب المزاد؟
         Task<DateTime?> GetEndTimeAsync(int auctionId);                        // وقت انتهاء المزاد
-        Task<IEnumerable<AuctionResponseDto>> SearchAsync(AuctionSearchDto searchDto);    // بحث متقدم
+        Task<IEnumerable<Auction>> SearchAsync(AuctionSearchDto searchDto);    // بحث متقدم
         IQueryable<Auction> GetQueryable();
+        Task AddImageAsync(AuctionImage image);                                // إضافة صورة للمزاد
+        Task RemoveImagesAsync(int auctionId);                                 // حذف صور المزاد
+        Task<IEnumerable<Auction>> GetByCategoryAsync(int categoryId);         // مزادات فئة معينة
+        Task<IEnumerable<Auction>> GetByUserAsync(int userId);                 // مزادات مستخدم معين
+        Task<Category> GetCategoryAsync(int auctionId);                        // فئة المزاد
+        Task<IEnumerable<AuctionImage>> GetAuctionImagesAsync(int auctionId);  // صور المزاد
     }
 }

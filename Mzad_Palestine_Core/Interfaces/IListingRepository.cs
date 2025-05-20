@@ -1,4 +1,5 @@
-﻿using Mzad_Palestine_Core.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Mzad_Palestine_Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace Mzad_Palestine_Core.Interfaces
         Task<IEnumerable<Listing>> GetActiveAsync();
         Task<IEnumerable<Listing>> GetByCategoryAsync(int categoryId);
         Task UpdateAsync(Listing entity);
+        IQueryable<Listing> GetQueryable();
     }
 }

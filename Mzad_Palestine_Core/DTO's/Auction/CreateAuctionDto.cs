@@ -10,12 +10,15 @@ namespace Mzad_Palestine_Core.DTO_s.Auction
 {
     public class CreateAuctionDto
     {
-        public int ListingId { get; set; }
-        public string Name { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Address { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public decimal ReservePrice { get; set; }
         public decimal BidIncrement { get; set; }
-        public string ImageUrl { get; set; }
+        public int CategoryId { get; set; }
+        public List<string> Images { get; set; }
+        public int UserId { get; set; }
     }
 }

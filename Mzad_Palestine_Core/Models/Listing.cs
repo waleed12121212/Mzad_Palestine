@@ -14,6 +14,7 @@ namespace Mzad_Palestine_Core.Models
         public int ListingId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string Address { get; set; }
         public decimal Price { get; set; }
         public decimal StartingPrice { get; set; }
         public int CategoryId { get; set; }
@@ -31,7 +32,6 @@ namespace Mzad_Palestine_Core.Models
         [ForeignKey("UserId")]
         public User User { get; set; }
 
-        public virtual Auction Auction { get; set; }
         public virtual ICollection<Bid> Bids { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<Report> Reports { get; set; }

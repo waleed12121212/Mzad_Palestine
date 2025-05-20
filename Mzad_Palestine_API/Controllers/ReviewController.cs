@@ -16,12 +16,14 @@ namespace Mzad_Palestine_API.Controllers
     {
         private readonly IReviewService _reviewService;
         private readonly IListingService _listingService;
+        private readonly IAuctionService _auctionService;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public ReviewController(IReviewService reviewService, IListingService listingService)
+        public ReviewController(IReviewService reviewService, IListingService listingService, IAuctionService auctionService)
         {
             _reviewService = reviewService;
             _listingService = listingService;
+            _auctionService = auctionService;
             _jsonOptions = new JsonSerializerOptions
             {
                 ReferenceHandler = ReferenceHandler.Preserve,
@@ -29,8 +31,8 @@ namespace Mzad_Palestine_API.Controllers
             };
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
+        [HttpPost("listing/{listingId}")]
+        public async Task<IActionResult> CreateListingReview(int listingId, [FromBody] CreateListingReviewDto dto)
         {
             try
             {
@@ -65,7 +67,7 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 // التحقق من وجود القائمة
-                var listing = await _listingService.GetByIdAsync(dto.ListingId);
+                var listing = await _listingService.GetByIdAsync(listingId);
                 if (listing == null)
                 {
                     return NotFound(new { success = false, error = "القائمة غير موجودة" });
@@ -77,10 +79,83 @@ namespace Mzad_Palestine_API.Controllers
                     return BadRequest(new { success = false, error = "لا يمكنك تقييم قائمتك الخاصة" });
                 }
 
-                dto.ReviewerId = parsedUserId;
-                dto.ReviewedUserId = listing.UserId;
-                var review = await _reviewService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetByListingId), new { listingId = review.ListingId }, new { success = true, data = review });
+                var review = new CreateReviewDto
+                {
+                    ReviewerId = parsedUserId,
+                    ReviewedUserId = listing.UserId,
+                    ListingId = listingId,
+                    Rating = dto.Rating,
+                    Comment = dto.Comment
+                };
+
+                var createdReview = await _reviewService.CreateAsync(review);
+                return CreatedAtAction(nameof(GetById), new { id = createdReview.Id }, new { success = true, data = createdReview });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpPost("auction/{auctionId}")]
+        public async Task<IActionResult> CreateAuctionReview(int auctionId, [FromBody] CreateAuctionReviewDto dto)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, error = "المستخدم غير موجود" });
+                }
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest(new { success = false, error = "معرف المستخدم غير صالح" });
+                }
+
+                if (dto.Rating < 1 || dto.Rating > 5)
+                {
+                    return BadRequest(new { success = false, error = "التقييم يجب أن يكون بين 1 و 5" });
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Comment))
+                {
+                    return BadRequest(new { success = false, error = "التعليق مطلوب" });
+                }
+
+                // التحقق من وجود المزاد
+                var auction = await _auctionService.GetByIdAsync(auctionId);
+                if (auction == null)
+                {
+                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                }
+
+                // التحقق من أن المستخدم ليس صاحب المزاد
+                if (auction.UserId == parsedUserId)
+                {
+                    return BadRequest(new { success = false, error = "لا يمكنك تقييم مزادك الخاص" });
+                }
+
+                var review = new CreateReviewDto
+                {
+                    ReviewerId = parsedUserId,
+                    ReviewedUserId = auction.UserId,
+                    AuctionId = auctionId,
+                    Rating = dto.Rating,
+                    Comment = dto.Comment
+                };
+
+                var createdReview = await _reviewService.CreateAsync(review);
+                return CreatedAtAction(nameof(GetById), new { id = createdReview.Id }, new { success = true, data = createdReview });
             }
             catch (Exception ex)
             {
@@ -107,6 +182,33 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 var reviews = await _reviewService.GetByListingIdAsync(listingId);
+                return Ok(new { success = true, data = reviews });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet("auction/{auctionId:int}")]
+        public async Task<IActionResult> GetByAuctionId(int auctionId)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                // التحقق من وجود المزاد
+                var auction = await _auctionService.GetByIdAsync(auctionId);
+                if (auction == null)
+                {
+                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                }
+
+                var reviews = await _reviewService.GetByAuctionIdAsync(auctionId);
                 return Ok(new { success = true, data = reviews });
             }
             catch (Exception ex)
@@ -336,6 +438,58 @@ namespace Mzad_Palestine_API.Controllers
                 }
 
                 return Ok(new { success = true, message = "تم حذف المراجعة بنجاح" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                var review = await _reviewService.GetByIdAsync(id);
+                if (review == null)
+                {
+                    return NotFound(new { success = false, error = "التقييم غير موجود" });
+                }
+
+                return Ok(new { success = true, data = review });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, error = ex.Message });
+            }
+        }
+
+        [HttpGet("auction/{auctionId}/average")]
+        public async Task<IActionResult> GetAuctionAverageRating(int auctionId)
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { success = false, error = "الرجاء تسجيل الدخول" });
+                }
+
+                // التحقق من وجود المزاد
+                var auction = await _auctionService.GetByIdAsync(auctionId);
+                if (auction == null)
+                {
+                    return NotFound(new { success = false, error = "المزاد غير موجود" });
+                }
+
+                var (averageRating, totalReviews) = await _reviewService.GetAuctionAverageRatingAsync(auctionId);
+                return Ok(new { success = true, data = new { averageRating, totalReviews } });
             }
             catch (Exception ex)
             {

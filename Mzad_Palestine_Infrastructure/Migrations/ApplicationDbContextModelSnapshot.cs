@@ -163,8 +163,15 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuctionId"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("BidIncrement")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -174,30 +181,31 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     b.Property<decimal>("CurrentBid")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("EndTime")
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ListingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ReservePrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("StartTime")
+                    b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
@@ -210,14 +218,46 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.HasKey("AuctionId");
 
-                    b.HasIndex("ListingId")
-                        .IsUnique();
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("WinnerId");
 
                     b.ToTable("Auctions");
+                });
+
+            modelBuilder.Entity("Mzad_Palestine_Core.Models.AuctionImage", b =>
+                {
+                    b.Property<int>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+
+                    b.Property<int>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsMain")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("AuctionId");
+
+                    b.ToTable("AuctionImages");
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.AutoBid", b =>
@@ -310,7 +350,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(255)
@@ -455,6 +495,10 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ListingId"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -678,6 +722,58 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     b.ToTable("Payments", (string)null);
                 });
 
+            modelBuilder.Entity("Mzad_Palestine_Core.Models.Phone", b =>
+                {
+                    b.Property<int>("PhoneId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PhoneId"));
+
+                    b.Property<int>("BatteryCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChargingSpeed")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("DisplaySize")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FrontCamera")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Ram")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RamExpandable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RearCamera")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RefreshRate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Storage")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PhoneId");
+
+                    b.ToTable("Phones");
+                });
+
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Report", b =>
                 {
                     b.Property<int>("ReportId")
@@ -687,31 +783,44 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("ListingId")
                         .HasColumnType("int");
 
                     b.Property<string>("Reason")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ReportedListingId")
+                    b.Property<string>("ReportType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReportedAuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReportedListingId")
                         .HasColumnType("int");
 
                     b.Property<int>("ReporterId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Resolution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("ResolvedBy")
                         .HasColumnType("int");
 
-                    b.Property<int>("StatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -722,6 +831,8 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     b.HasKey("ReportId");
 
                     b.HasIndex("ListingId");
+
+                    b.HasIndex("ReportedAuctionId");
 
                     b.HasIndex("ReportedListingId");
 
@@ -744,6 +855,9 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AuctionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -753,7 +867,7 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<int>("ListingId")
+                    b.Property<int?>("ListingId")
                         .HasColumnType("int");
 
                     b.Property<int>("Rating")
@@ -766,6 +880,8 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
 
                     b.HasIndex("ListingId");
 
@@ -996,13 +1112,18 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<int>("ListingId")
+                    b.Property<int?>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ListingId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("WatchlistId");
+
+                    b.HasIndex("AuctionId");
 
                     b.HasIndex("ListingId");
 
@@ -1064,10 +1185,10 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Auction", b =>
                 {
-                    b.HasOne("Mzad_Palestine_Core.Models.Listing", "Listing")
-                        .WithOne("Auction")
-                        .HasForeignKey("Mzad_Palestine_Core.Models.Auction", "ListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.HasOne("Mzad_Palestine_Core.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", "User")
@@ -1081,11 +1202,22 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasForeignKey("WinnerId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.Navigation("Listing");
+                    b.Navigation("Category");
 
                     b.Navigation("User");
 
                     b.Navigation("Winner");
+                });
+
+            modelBuilder.Entity("Mzad_Palestine_Core.Models.AuctionImage", b =>
+                {
+                    b.HasOne("Mzad_Palestine_Core.Models.Auction", "Auction")
+                        .WithMany("Images")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
                 });
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.AutoBid", b =>
@@ -1300,22 +1432,26 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .WithMany("Reports")
                         .HasForeignKey("ListingId");
 
+                    b.HasOne("Mzad_Palestine_Core.Models.Auction", "ReportedAuction")
+                        .WithMany()
+                        .HasForeignKey("ReportedAuctionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Mzad_Palestine_Core.Models.Listing", "ReportedListing")
                         .WithMany()
                         .HasForeignKey("ReportedListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", "Reporter")
                         .WithMany()
                         .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", "Resolver")
                         .WithMany()
                         .HasForeignKey("ResolvedBy")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", null)
                         .WithMany("ReportsMade")
@@ -1324,6 +1460,8 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                     b.HasOne("Mzad_Palestine_Core.Models.User", null)
                         .WithMany("ReportsReceived")
                         .HasForeignKey("UserId1");
+
+                    b.Navigation("ReportedAuction");
 
                     b.Navigation("ReportedListing");
 
@@ -1334,11 +1472,14 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Review", b =>
                 {
+                    b.HasOne("Mzad_Palestine_Core.Models.Auction", "Auction")
+                        .WithMany()
+                        .HasForeignKey("AuctionId");
+
                     b.HasOne("Mzad_Palestine_Core.Models.Listing", "Listing")
                         .WithMany("Reviews")
                         .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", "ReviewedUser")
                         .WithMany("ReviewsReceived")
@@ -1351,6 +1492,8 @@ namespace Mzad_Palestine_Infrastructure.Migrations
                         .HasForeignKey("ReviewerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Auction");
 
                     b.Navigation("Listing");
 
@@ -1383,17 +1526,22 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Watchlist", b =>
                 {
+                    b.HasOne("Mzad_Palestine_Core.Models.Auction", "Auction")
+                        .WithMany()
+                        .HasForeignKey("AuctionId");
+
                     b.HasOne("Mzad_Palestine_Core.Models.Listing", "Listing")
                         .WithMany("Watchlists")
                         .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Mzad_Palestine_Core.Models.User", "User")
                         .WithMany("Watchlists")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Auction");
 
                     b.Navigation("Listing");
 
@@ -1408,6 +1556,8 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
                     b.Navigation("Disputes");
 
+                    b.Navigation("Images");
+
                     b.Navigation("Payments");
                 });
 
@@ -1420,9 +1570,6 @@ namespace Mzad_Palestine_Infrastructure.Migrations
 
             modelBuilder.Entity("Mzad_Palestine_Core.Models.Listing", b =>
                 {
-                    b.Navigation("Auction")
-                        .IsRequired();
-
                     b.Navigation("Bids");
 
                     b.Navigation("Images");

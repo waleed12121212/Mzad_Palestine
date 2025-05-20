@@ -8,17 +8,25 @@ namespace Mzad_Palestine_Core.Interfaces.Services
 {
     public interface IAuctionService
     {
+        Task<Auction> CreateAsync(CreateAuctionDto dto);
+        Task<Auction> GetByIdAsync(int id);
+        Task<IEnumerable<Auction>> GetAllAsync();
+        Task<IEnumerable<Auction>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Auction>> GetByCategoryAsync(int categoryId);
+        Task<IEnumerable<Auction>> GetActiveAsync();
+        Task<Auction> UpdateAsync(int id, UpdateAuctionDto dto);
+        Task<bool> DeleteAsync(int id);
         Task<Auction> GetAuctionDetailsAsync(int auctionId);
-        Task<IEnumerable<AuctionResponseDto>> GetUserAuctionsAsync(int userId);
-        Task<IEnumerable<AuctionResponseDto>> GetOpenAuctionsAsync();
-        Task<IEnumerable<AuctionResponseDto>> GetClosedAuctionsAsync();
-        Task<IEnumerable<AuctionResponseDto>> SearchAuctionsAsync(AuctionSearchDto searchDto);
+        Task<Auction> GetAuctionWithBidsAsync(int auctionId);
+        Task<IEnumerable<AuctionDto>> GetPendingAuctionsAsync();
+        Task<IEnumerable<AuctionDto>> GetCompletedAuctionsAsync();
+        Task<IEnumerable<AuctionDto>> GetOpenAuctionsAsync();
+        Task<IEnumerable<AuctionDto>> GetClosedAuctionsAsync();
+        Task<IEnumerable<AuctionDto>> SearchAuctionsAsync(AuctionSearchDto searchDto);
         Task CreateAuctionAsync(Auction auction);
         Task UpdateAuctionAsync(Auction auction, int userId);
         Task CloseAuctionAsync(int auctionId, int userId);
         Task DeleteAuctionAsync(int auctionId, int userId);
-        Task<IEnumerable<AuctionResponseDto>> GetActiveAsync();
-        Task<Auction> GetByIdAsync(int id);
-        Task<Auction> GetAuctionWithBidsAsync(int auctionId);
+        Task<IEnumerable<AuctionDto>> GetUserAuctionsAsync(int userId);
     }
 }
